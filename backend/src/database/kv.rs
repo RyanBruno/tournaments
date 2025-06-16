@@ -8,6 +8,8 @@ use rkyv::{
     Archive, Deserialize, Serialize,
     access, to_bytes,
     rancor::Error as RError, 
+    collections::swiss_table::ArchivedHashMap,
+    string::ArchivedString,
 };
 use memmap2::Mmap;
 
@@ -21,18 +23,21 @@ pub trait Patch<T> {
 pub enum KVEvent<T> {
   Created(EntityId, T),
   Updated(EntityId, T),
+  Deleted(EntityId),
 }
 
 pub struct KVStore<T> {
   snapshot_path: PathBuf,
   event_path: PathBuf,
+  pending_events_len: usize,
   mmap: Mmap,
   _marker: std::marker::PhantomData<T>,
 }
 
 impl<T> KVStore<T>
 where
-  T: Archive + for<'a> rkyv::Serialize<rkyv::rancor::Strategy<rkyv::ser::Serializer<rkyv::util::AlignedVec, rkyv::ser::allocator::ArenaHandle<'a>, rkyv::ser::sharing::Share>, rkyv::rancor::Error>>,
+  T: Archive + for<'a> rkyv::Serialize<rkyv::rancor::Strategy<rkyv::ser::Serializer<rkyv::util::AlignedVec, rkyv::ser::allocator::ArenaHandle<'a>, rkyv::ser::sharing::Share>, rkyv::rancor::Error>>
+  + Default + Clone + for<'a> rkyv::bytecheck::CheckBytes<rkyv::rancor::Strategy<rkyv::validation::Validator<rkyv::validation::archive::ArchiveValidator<'a>, rkyv::validation::shared::SharedValidator>, rkyv::rancor::Error>>
 {
 
   pub fn create(&mut self, id: EntityId, obj: T) -> Result<(), Box<dyn Error>> {
@@ -45,7 +50,7 @@ where
   where
     P: Patch<T>,
   {
-    let mut entity = self.read(id.clone())?;
+    let mut entity = self.read(id.clone())?.unwrap_or_default();
     patch.apply_to(&mut entity);
 
     let event = KVEvent::Updated(id.clone(), entity);
@@ -53,17 +58,21 @@ where
     Ok(())
   }
 
-  pub fn read(&self, id: EntityId) -> Result<T, Box<dyn Error>> {
-    let map = access::<HashMap<EntityId, T>, RError>(&self.mmap);
+  pub fn read(&self, id: EntityId) -> Result<Option<T>, Box<dyn Error>> {
+    let map = access::<ArchivedHashMap<ArchivedString, T>, RError>(&self.mmap)?;
 
-    todo!("Implement loading from snapshot or reconstruct from event log");
+    if let Some(entity) = map.get(id.as_str()) {
+      Ok(Some(entity.clone()))
+    } else {
+      Ok(None)
+    }
   }
 
-  pub fn delete(&self, id: EntityId) -> Result<T, Box<dyn Error>> {
-    todo!("Implement deletion logic, by marking as deleted in event log");
+  pub fn delete(&mut self, id: EntityId) -> Result<(), Box<dyn Error>> {
+    let event = KVEvent::Deleted(id.clone());
+    self.write_event(&event)?;
+    Ok(())
   }
-
-  // Additional methods for delete, update, etc. can be added here.
 }
 
 impl<T> KVStore<T>
@@ -79,6 +88,7 @@ where
     Ok(Self {
       snapshot_path,
       event_path,
+      pending_events_len: 0,
       mmap,
       _marker: std::marker::PhantomData,
     })
@@ -90,7 +100,8 @@ where
   }
 
   fn write_event(&mut self, event: &KVEvent<T>) -> Result<(), Box<dyn Error>> {
-    let filename = self.event_path.join(format!("event_{}.rkyv", 1)); // todo event id management
+    let filename = self.event_path.join(format!("event_{}.rkyv", self.pending_events_len));
+    self.pending_events_len += 1;
     let archived = to_bytes::<RError>(event)?;
     let mut file = File::create(filename)?;
     file.write_all(&archived)?;
