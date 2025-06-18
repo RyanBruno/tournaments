@@ -3,15 +3,27 @@ use std::fs::create_dir_all;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use std::collections::HashMap;
+use std::io::BufReader;
+use std::io::Read;
 use rkyv::{
     Archive, Deserialize, Serialize,
     access, to_bytes,
     rancor::Error as RError, 
+    rancor::Strategy,
     collections::swiss_table::ArchivedHashMap,
     string::ArchivedString,
+    bytecheck::CheckBytes,
+    validation::{Validator,
+      shared::SharedValidator,
+      archive::ArchiveValidator,
+    },
 };
+use rkyv::api::high::HighSerializer;
+use rkyv::util::AlignedVec;
+use rkyv::ser::allocator::ArenaHandle;
 use memmap2::Mmap;
+use std::hash::{DefaultHasher, Hash, Hasher};
+use std::fs::OpenOptions;
 
 pub type EntityId = String;
 
@@ -19,25 +31,32 @@ pub trait Patch<T> {
   fn apply_to(self, target: &mut T);
 }
 
+pub struct KVStore<T, P: Patch<T>> {
+  snapshot_path: PathBuf,
+  event_path: PathBuf,
+  mmaps: Vec<Mmap>,
+  _marker_t: std::marker::PhantomData<T>,
+  _marker_p: std::marker::PhantomData<P>,
+}
+
 #[derive(Debug, Archive, Serialize, Deserialize)]
-pub enum KVEvent<T> {
+enum KVEvent<T, P: Patch<T>> {
   Created(EntityId, T),
-  Updated(EntityId, T),
+  Updated(EntityId, P),
   Deleted(EntityId),
 }
 
-pub struct KVStore<T> {
-  snapshot_path: PathBuf,
-  event_path: PathBuf,
-  pending_events_len: usize,
-  mmap: Mmap,
-  _marker: std::marker::PhantomData<T>,
-}
-
-impl<T> KVStore<T>
+impl<T, P> KVStore<T, P>
 where
-  T: Archive + for<'a> rkyv::Serialize<rkyv::rancor::Strategy<rkyv::ser::Serializer<rkyv::util::AlignedVec, rkyv::ser::allocator::ArenaHandle<'a>, rkyv::ser::sharing::Share>, rkyv::rancor::Error>>
-  + Default + Clone + for<'a> rkyv::bytecheck::CheckBytes<rkyv::rancor::Strategy<rkyv::validation::Validator<rkyv::validation::archive::ArchiveValidator<'a>, rkyv::validation::shared::SharedValidator>, rkyv::rancor::Error>>
+  T: Archive + Default + Clone
+  //+ for<'a> CheckBytes<HighValidator<'a, RError>>
+  + for<'a> Serialize<HighSerializer<AlignedVec, ArenaHandle<'a>, RError>>,
+  for<'a> <T as Archive>::Archived: CheckBytes<Strategy<Validator<ArchiveValidator<'a>, SharedValidator>, rkyv::rancor::Error>>,
+  //for<'a> &'a<T as Archive>::Archived: Default,
+  P: Patch<T> + Archive + Default + Clone
+  + for<'a> Serialize<HighSerializer<AlignedVec, ArenaHandle<'a>, RError>>,
+  for<'a> <P as Archive>::Archived: CheckBytes<Strategy<Validator<ArchiveValidator<'a>, SharedValidator>, rkyv::rancor::Error>>,
+  //for<'a> &'a<P as Archive>::Archived: Default,
 {
 
   pub fn create(&mut self, id: EntityId, obj: T) -> Result<(), Box<dyn Error>> {
@@ -46,26 +65,11 @@ where
     Ok(())
   }
 
-  pub fn update<P>(&mut self, id: EntityId, patch: P) -> Result<(), Box<dyn Error>>
-  where
-    P: Patch<T>,
+  pub fn update(&mut self, id: EntityId, patch: P) -> Result<(), Box<dyn Error>>
   {
-    let mut entity = self.read(id.clone())?.unwrap_or_default();
-    patch.apply_to(&mut entity);
-
-    let event = KVEvent::Updated(id.clone(), entity);
+    let event = KVEvent::Updated(id.clone(), patch);
     self.write_event(&event)?;
     Ok(())
-  }
-
-  pub fn read(&self, id: EntityId) -> Result<Option<T>, Box<dyn Error>> {
-    let map = access::<ArchivedHashMap<ArchivedString, T>, RError>(&self.mmap)?;
-
-    if let Some(entity) = map.get(id.as_str()) {
-      Ok(Some(entity.clone()))
-    } else {
-      Ok(None)
-    }
   }
 
   pub fn delete(&mut self, id: EntityId) -> Result<(), Box<dyn Error>> {
@@ -73,37 +77,102 @@ where
     self.write_event(&event)?;
     Ok(())
   }
-}
 
-impl<T> KVStore<T>
-where
-  T: Archive + for<'a> rkyv::Serialize<rkyv::rancor::Strategy<rkyv::ser::Serializer<rkyv::util::AlignedVec, rkyv::ser::allocator::ArenaHandle<'a>, rkyv::ser::sharing::Share>, rkyv::rancor::Error>>,
-{
-  pub fn new(snapshot_path: PathBuf, event_path: PathBuf, partition_size: usize) -> Result<Self, Box<dyn Error>> {
+  pub fn read(&self, id: EntityId) -> Result<Option<&<T as Archive>::Archived>, Box<dyn Error>>
+  {
+    let shard_index = {
+      let mut hasher = DefaultHasher::new();
+      id.hash(&mut hasher);
+      (hasher.finish() % self.mmaps.len() as u64) as usize
+    };
+
+    let mmap = &self.mmaps[shard_index];
+    let map = access::<ArchivedHashMap<ArchivedString, T::Archived>, RError>(&mmap)?;
+
+    if let Some(entity) = map.get(id.as_str()) {
+      Ok(Some(entity))
+    } else {
+      Ok(None)
+    }
+  }
+
+  pub fn new(snapshot_path: PathBuf, event_path: PathBuf, partitions: usize) -> Result<Self, Box<dyn Error>> {
+    // Ensure the snapshot and event directories exist
     let _ = create_dir_all(&snapshot_path);
     let _ = create_dir_all(&event_path);
-    let file = File::open(&snapshot_path)?;
-    let mmap = unsafe { Mmap::map(&file)? };
+
+    // Load the snapshot file
+    let mut mmaps = Vec::with_capacity(partitions);
+    for i in 0..partitions {
+        let path = PathBuf::from(snapshot_path.join(format!("partition_{i}.rkyv")));
+        let file = File::open(&path)?;
+        let mmap = unsafe { Mmap::map(&file)? };
+        mmaps.push(mmap);
+    }
 
     Ok(Self {
       snapshot_path,
       event_path,
-      pending_events_len: 0,
-      mmap,
-      _marker: std::marker::PhantomData,
+      mmaps,
+      _marker_t: std::marker::PhantomData,
+      _marker_p: std::marker::PhantomData,
     })
   }
 
-  fn refresh_snapshot(&mut self) -> Result<(), Box<dyn Error>> {
-    // Logic to refresh the snapshot from the event log.
-    todo!("Implement snapshot refresh logic");
+  fn refresh_snapshot(&mut self) -> Result<(), Box<dyn Error>>
+    where for<'a> <T as Archive>::Archived: CheckBytes<Strategy<Validator<ArchiveValidator<'a>, SharedValidator>, rkyv::rancor::Error>>
+  {
+    let file_path = self.event_path.join("event_log.rkyv");
+    let mut reader = BufReader::new(File::open(file_path)?);
+    let mut buffer = Vec::new();
+
+    loop {
+      let mut len_buf = [0u8; 4];
+      if reader.read_exact(&mut len_buf).is_err() {
+        break; // Reached EOF or corrupt data
+      }
+
+      let len = u32::from_le_bytes(len_buf) as usize;
+      buffer.resize(len, 0);
+      reader.read_exact(&mut buffer)?;
+
+      //let archived = unsafe { archived_root::<KVEvent<T>>(&buffer[..]) };
+      let event = access::<ArchivedKVEvent<T, P>, RError>(&buffer[..])?;
+
+      match event {
+        ArchivedKVEvent::Created(id, _obj) => {
+          // Handle creation
+          println!("Create {id}");
+          panic!()
+        },
+        ArchivedKVEvent::Updated(id, _obj) => {
+          println!("Update {id}");
+          panic!()
+        },
+        ArchivedKVEvent::Deleted(id) => {
+          println!("Delete {id}");
+          panic!()
+        },
+      };
+    };
+    Ok(())
   }
 
-  fn write_event(&mut self, event: &KVEvent<T>) -> Result<(), Box<dyn Error>> {
-    let filename = self.event_path.join(format!("event_{}.rkyv", self.pending_events_len));
-    self.pending_events_len += 1;
+  fn write_event(&mut self, event: &KVEvent<T, P>) -> Result<(), Box<dyn Error>> {
+    // Open the log file in append mode
+    let file_path = self.event_path.join("event_log.rkyv");
+    let mut file = OpenOptions::new()
+      .create(true)
+      .append(true)
+      .open(file_path)?;
+
+    // Archive the event
     let archived = to_bytes::<RError>(event)?;
-    let mut file = File::create(filename)?;
+
+    // Prefix with length (u32 LE)
+    let len = archived.len() as u32;
+    let len_bytes = len.to_le_bytes(); // Converts to [u8; 4] in little-endian
+    file.write_all(&len_bytes)?;
     file.write_all(&archived)?;
 
     Ok(())

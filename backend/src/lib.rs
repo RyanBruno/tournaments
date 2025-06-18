@@ -23,4 +23,7 @@ pub use crate::utils::responses::{
 };
 
 pub mod api;
-mod database;
+pub mod database;
+pub use crate::database::KVStore;
+pub use crate::database::Patch;
+pub use crate::database::EntityId;
