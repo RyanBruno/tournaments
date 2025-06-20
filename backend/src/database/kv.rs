@@ -24,6 +24,7 @@ use rkyv::ser::allocator::ArenaHandle;
 use memmap2::Mmap;
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::fs::OpenOptions;
+use std::collections::HashMap;
 
 pub type EntityId = String;
 
@@ -49,14 +50,11 @@ enum KVEvent<T, P: Patch<T>> {
 impl<T, P> KVStore<T, P>
 where
   T: Archive + Default + Clone
-  //+ for<'a> CheckBytes<HighValidator<'a, RError>>
-  + for<'a> Serialize<HighSerializer<AlignedVec, ArenaHandle<'a>, RError>>,
+    + for<'a> Serialize<HighSerializer<AlignedVec, ArenaHandle<'a>, RError>>,
   for<'a> <T as Archive>::Archived: CheckBytes<Strategy<Validator<ArchiveValidator<'a>, SharedValidator>, rkyv::rancor::Error>>,
-  //for<'a> &'a<T as Archive>::Archived: Default,
   P: Patch<T> + Archive + Default + Clone
-  + for<'a> Serialize<HighSerializer<AlignedVec, ArenaHandle<'a>, RError>>,
+    + for<'a> Serialize<HighSerializer<AlignedVec, ArenaHandle<'a>, RError>>,
   for<'a> <P as Archive>::Archived: CheckBytes<Strategy<Validator<ArchiveValidator<'a>, SharedValidator>, rkyv::rancor::Error>>,
-  //for<'a> &'a<P as Archive>::Archived: Default,
 {
 
   pub fn create(&mut self, id: EntityId, obj: T) -> Result<(), Box<dyn Error>> {
@@ -105,6 +103,12 @@ where
     let mut mmaps = Vec::with_capacity(partitions);
     for i in 0..partitions {
         let path = PathBuf::from(snapshot_path.join(format!("partition_{i}.rkyv")));
+        if !path.exists() {
+            let map: HashMap<String, T> = HashMap::new();
+            let archived = to_bytes::<RError>(&map)?;
+            let mut file = File::create(&path)?;
+            file.write_all(&archived)?;
+        }
         let file = File::open(&path)?;
         let mmap = unsafe { Mmap::map(&file)? };
         mmaps.push(mmap);
@@ -119,42 +123,46 @@ where
     })
   }
 
-  fn refresh_snapshot(&mut self) -> Result<(), Box<dyn Error>>
+  pub fn refresh_snapshot(&mut self) -> Result<(), Box<dyn Error>>
     where for<'a> <T as Archive>::Archived: CheckBytes<Strategy<Validator<ArchiveValidator<'a>, SharedValidator>, rkyv::rancor::Error>>
   {
     let file_path = self.event_path.join("event_log.rkyv");
-    let mut reader = BufReader::new(File::open(file_path)?);
-    let mut buffer = Vec::new();
+    {
+      let mut reader = BufReader::new(File::open(&file_path)?);
+      let mut buffer = Vec::new();
 
-    loop {
-      let mut len_buf = [0u8; 4];
-      if reader.read_exact(&mut len_buf).is_err() {
-        break; // Reached EOF or corrupt data
-      }
+      loop {
+        let mut len_buf = [0u8; 4];
+        if reader.read_exact(&mut len_buf).is_err() {
+          break; // Reached EOF or corrupt data
+        }
 
-      let len = u32::from_le_bytes(len_buf) as usize;
-      buffer.resize(len, 0);
-      reader.read_exact(&mut buffer)?;
+        let len = u32::from_le_bytes(len_buf) as usize;
+        buffer.resize(len, 0);
+        reader.read_exact(&mut buffer)?;
 
-      //let archived = unsafe { archived_root::<KVEvent<T>>(&buffer[..]) };
-      let event = access::<ArchivedKVEvent<T, P>, RError>(&buffer[..])?;
+        //let archived = unsafe { archived_root::<KVEvent<T>>(&buffer[..]) };
+        let event = access::<ArchivedKVEvent<T, P>, RError>(&buffer[..])?;
 
-      match event {
-        ArchivedKVEvent::Created(id, _obj) => {
-          // Handle creation
-          println!("Create {id}");
-          panic!()
-        },
-        ArchivedKVEvent::Updated(id, _obj) => {
-          println!("Update {id}");
-          panic!()
-        },
-        ArchivedKVEvent::Deleted(id) => {
-          println!("Delete {id}");
-          panic!()
-        },
+        match event {
+          ArchivedKVEvent::Created(id, _obj) => {
+            // Handle creation
+            println!("Create {id}");
+          },
+          ArchivedKVEvent::Updated(id, _obj) => {
+            println!("Update {id}");
+          },
+          ArchivedKVEvent::Deleted(id) => {
+            println!("Delete {id}");
+          },
+        };
       };
-    };
+    }
+    OpenOptions::new()
+      .write(true)
+      .truncate(true) // this clears the contents
+      .open(file_path)?; 
+
     Ok(())
   }
 
