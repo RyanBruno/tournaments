@@ -1,6 +1,7 @@
 use dioxus::prelude::*;
 use crate::Route;
 
+#[component]
 pub fn Signup() -> Element {
   rsx!(
     div { style: "min-height: 100vh; display: flex; align-items: center; justify-content: center; background-color: #f9fafb; font-family: sans-serif;",

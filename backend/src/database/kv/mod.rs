@@ -1,3 +1,5 @@
+pub mod snapshot;
+
 use std::error::Error;
 use std::fs::create_dir_all;
 use std::fs::File;
@@ -13,6 +15,7 @@ use rkyv::{
     collections::swiss_table::ArchivedHashMap,
     string::ArchivedString,
     bytecheck::CheckBytes,
+    de::Pool,
     validation::{Validator,
       shared::SharedValidator,
       archive::ArchiveValidator,
@@ -51,10 +54,13 @@ impl<T, P> KVStore<T, P>
 where
   T: Archive + Default + Clone
     + for<'a> Serialize<HighSerializer<AlignedVec, ArenaHandle<'a>, RError>>,
+  //for<'a> &'a T: Default,
+  <T as Archive>::Archived: Deserialize<T, Strategy<Pool, rkyv::rancor::Error>>,
   for<'a> <T as Archive>::Archived: CheckBytes<Strategy<Validator<ArchiveValidator<'a>, SharedValidator>, rkyv::rancor::Error>>,
   P: Patch<T> + Archive + Default + Clone
     + for<'a> Serialize<HighSerializer<AlignedVec, ArenaHandle<'a>, RError>>,
   for<'a> <P as Archive>::Archived: CheckBytes<Strategy<Validator<ArchiveValidator<'a>, SharedValidator>, rkyv::rancor::Error>>,
+  <P as Archive>::Archived: Deserialize<P, Strategy<Pool, rkyv::rancor::Error>>
 {
 
   pub fn create(&mut self, id: EntityId, obj: T) -> Result<(), Box<dyn Error>> {
@@ -123,7 +129,7 @@ where
     })
   }
 
-  pub fn refresh_snapshot(&mut self) -> Result<(), Box<dyn Error>>
+  pub fn _refresh_snapshot(&mut self) -> Result<(), Box<dyn Error>>
     where for<'a> <T as Archive>::Archived: CheckBytes<Strategy<Validator<ArchiveValidator<'a>, SharedValidator>, rkyv::rancor::Error>>
   {
     let file_path = self.event_path.join("event_log.rkyv");

@@ -1,8 +1,9 @@
 use dioxus::prelude::*;
 use crate::Route;
-const BUCKET_GOLF_PNG: Asset = asset!("/assets/bucket-golf.png");
+const BUCKET_GOLF_SVG: Asset = asset!("/assets/bucket-golf.png");
 
 
+#[component]
 pub fn Dashboard() -> Element {
   rsx!(
     div { style: "min-height: 100vh; background-color: #f9fafb; font-family: sans-serif; padding: 2rem;",
@@ -102,7 +103,7 @@ pub fn Dashboard() -> Element {
                 "⚡ Almost Sold Out"
               }
               img {
-                src: BUCKET_GOLF_PNG,
+                src: BUCKET_GOLF_SVG,
                 alt: "Bucket Golf League",
                 style: "
                   width: 8rem;
@@ -174,7 +175,7 @@ pub fn Dashboard() -> Element {
                 "⚡ Almost Sold Out"
               }
               img {
-                src: BUCKET_GOLF_PNG,
+                src: BUCKET_GOLF_SVG,
                 alt: "Bucket Golf League",
                 style: "
                   width: 8rem;
@@ -246,7 +247,7 @@ pub fn Dashboard() -> Element {
                 "⚡ Almost Sold Out"
               }
               img {
-                src: BUCKET_GOLF_PNG,
+                src: BUCKET_GOLF_SVG,
                 alt: "Bucket Golf League",
                 style: "
                   width: 8rem;
