@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 use crate::Route;
+const BUCKET_GOLF_PNG: Asset = asset!("/assets/bucket-golf.png");
+
 
 pub fn Dashboard() -> Element {
   rsx!(
@@ -29,7 +31,8 @@ pub fn Dashboard() -> Element {
         div {
           h2 { style: "font-size: 1.25rem; font-weight: 600; color: #111827; margin-bottom: 1rem;", "Announcements" }
           div { style: "background-color: #eef2ff; padding: 1rem; border-radius: 0.5rem; color: #1e3a8a;",
-            p { "🎉 New dashboard analytics launching next week. Stay tuned!" }
+            p { "⛳️ New summer leagues of bucket golf just dropped. Rally your crew and start swinging!" }
+
           }
         }
 
@@ -40,66 +43,254 @@ pub fn Dashboard() -> Element {
         CreateEventForm {}
 
         // Events Section
-        div { style: "margin-bottom: 3rem;",
-          h2 { style: "font-size: 1.25rem; font-weight: 600; color: #111827; margin-bottom: 1rem;", "Your Upcoming Events" }
-          div { style: "display: flex; flex-direction: column; gap: 1.5rem;",
-            // Card 1
-            div {
-              style: "display: flex; gap: 1rem; background: white; border-radius: 0.75rem; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05);",
-              img {
-                src: "/static/event1.jpg", // replace with your image path
-                alt: "Launch Meetup",
-                style: "width: 6rem; height: 6rem; object-fit: cover;"
-              }
-              div { style: "padding: 1rem;",
-                h3 { style: "font-size: 1rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;", "Launch Meetup" }
-                p { style: "font-size: 0.875rem; color: #6b7280;", "Monday, June 24 – 5:00 PM" }
-                a {
-                  href: "/event/launch-meetup", // adjust path as needed
-                  style: "
-                    display: inline-block;
-                    font-size: 0.875rem;
-                    font-weight: 500;
-                    color: #4f46e5;
-                    text-decoration: none;
-                    padding: 0.5rem 1rem;
-                    background-color: #eef2ff;
-                    border-radius: 9999px;
-                    transition: background-color 0.2s;
-                  ",
-                  "View Event"
-                }
-              }
+        div {
+          style: "margin-bottom: 3rem; font-family: sans-serif;",
+          
+          // Header Row: Title + Dropdown
+          div {
+            style: "display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;",
+
+            h2 {
+              style: "font-size: 1.25rem; font-weight: 600; color: #111827;",
+              "Your Upcoming Events"
             }
-            // Card 2
-            div {
-              style: "display: flex; gap: 1rem; background: white; border-radius: 0.75rem; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05);",
-              img {
-                src: "/static/event2.jpg",
-                alt: "Planning Session",
-                style: "width: 6rem; height: 6rem; object-fit: cover;"
-              }
-              div { style: "padding: 1rem;",
-                h3 { style: "font-size: 1rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;", "Weekly Planning Session" }
-                p { style: "font-size: 0.875rem; color: #6b7280;", "Wednesday, June 26 – 12:00 PM" }
-                a {
-                  href: "/event/launch-meetup", // adjust path as needed
-                  style: "
-                    display: inline-block;
-                    font-size: 0.875rem;
-                    font-weight: 500;
-                    color: #4f46e5;
-                    text-decoration: none;
-                    padding: 0.5rem 1rem;
-                    background-color: #eef2ff;
-                    border-radius: 9999px;
-                    transition: background-color 0.2s;
-                  ",
-                  "View Event"
-                }
-              }
+
+            select {
+              style: "
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+                border: 1px solid #d1d5db;
+                border-radius: 9999px;
+                background-color: #f9fafb;
+                color: #374151;
+                cursor: pointer;
+              ",
+              option { value: "", disabled: true, selected: true, "Filter by city" }
+              option { value: "arlington", "Arlington" }
+              option { value: "dc", "Washington, DC" }
+              option { value: "baltimore", "Baltimore" }
+              option { value: "richmond", "Richmond" }
             }
           }
+          div { style: "display: flex; flex-direction: column; gap: 1.5rem;",
+
+            div {
+              style: "
+                position: relative;
+                display: flex;
+                gap: 1rem;
+                background: white;
+                border-radius: 0.75rem;
+                overflow: hidden;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                align-items: stretch;
+              ",
+              // Flash banner
+              div {
+                style: "
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  background-color: #facc15;
+                  color: #78350f;
+                  font-weight: 700;
+                  font-size: 0.75rem;
+                  padding: 0.25rem 0.75rem;
+                  border-bottom-right-radius: 0.5rem;
+                  z-index: 1;
+                ",
+                "⚡ Almost Sold Out"
+              }
+              img {
+                src: BUCKET_GOLF_PNG,
+                alt: "Bucket Golf League",
+                style: "
+                  width: 8rem;
+                  object-fit: cover;
+                  display: block;
+                  align-self: stretch;
+                  flex-shrink: 0;
+                "
+              }
+              div {
+                style: "padding: 1rem; display: flex; flex-direction: column; justify-content: center;",
+                h3 {
+                  style: "font-size: 1rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;",
+                  "⛳️ Arlington Bucket Golf League"
+                }
+                p {
+                  style: "font-size: 0.875rem; color: #6b7280;",
+                  "Saturday, July 13 – 3:00 PM · Quincy Park, VA"
+                }
+                p {
+                  style: "font-size: 0.875rem; color: #dc2626; margin-top: 0.25rem;",
+                  "Only 3 slots left"
+                }
+                a {
+                  href: "/event/bucket-golf-arlington",
+                  style: "
+                    display: inline-block;
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                    color: #4f46e5;
+                    text-decoration: none;
+                    padding: 0.5rem 1rem;
+                    background-color: #eef2ff;
+                    border-radius: 9999px;
+                    margin-top: 0.75rem;
+                    transition: background-color 0.2s;
+                    flex-shrink: 0;
+                    align-self: start;
+                  ",
+                  "View Event"
+                }
+              }
+            }
+            div {
+              style: "
+                position: relative;
+                display: flex;
+                gap: 1rem;
+                background: white;
+                border-radius: 0.75rem;
+                overflow: hidden;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                align-items: stretch;
+              ",
+              // Flash banner
+              div {
+                style: "
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  background-color: #facc15;
+                  color: #78350f;
+                  font-weight: 700;
+                  font-size: 0.75rem;
+                  padding: 0.25rem 0.75rem;
+                  border-bottom-right-radius: 0.5rem;
+                  z-index: 1;
+                ",
+                "⚡ Almost Sold Out"
+              }
+              img {
+                src: BUCKET_GOLF_PNG,
+                alt: "Bucket Golf League",
+                style: "
+                  width: 8rem;
+                  object-fit: cover;
+                  display: block;
+                  align-self: stretch;
+                  flex-shrink: 0;
+                "
+              }
+              div {
+                style: "padding: 1rem; display: flex; flex-direction: column; justify-content: center;",
+                h3 {
+                  style: "font-size: 1rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;",
+                  "⛳️ Arlington Bucket Golf League"
+                }
+                p {
+                  style: "font-size: 0.875rem; color: #6b7280;",
+                  "Saturday, July 13 – 3:00 PM · Quincy Park, VA"
+                }
+                p {
+                  style: "font-size: 0.875rem; color: #dc2626; margin-top: 0.25rem;",
+                  "Only 3 slots left"
+                }
+                a {
+                  href: "/event/bucket-golf-arlington",
+                  style: "
+                    display: inline-block;
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                    color: #4f46e5;
+                    text-decoration: none;
+                    padding: 0.5rem 1rem;
+                    background-color: #eef2ff;
+                    border-radius: 9999px;
+                    margin-top: 0.75rem;
+                    transition: background-color 0.2s;
+                    flex-shrink: 0;
+                    align-self: start;
+                  ",
+                  "View Event"
+                }
+              }
+            }
+              div {
+              style: "
+                position: relative;
+                display: flex;
+                gap: 1rem;
+                background: white;
+                border-radius: 0.75rem;
+                overflow: hidden;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                align-items: stretch;
+              ",
+              // Flash banner
+              div {
+                style: "
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  background-color: #facc15;
+                  color: #78350f;
+                  font-weight: 700;
+                  font-size: 0.75rem;
+                  padding: 0.25rem 0.75rem;
+                  border-bottom-right-radius: 0.5rem;
+                  z-index: 1;
+                ",
+                "⚡ Almost Sold Out"
+              }
+              img {
+                src: BUCKET_GOLF_PNG,
+                alt: "Bucket Golf League",
+                style: "
+                  width: 8rem;
+                  object-fit: cover;
+                  display: block;
+                  align-self: stretch;
+                  flex-shrink: 0;
+                "
+              }
+              div {
+                style: "padding: 1rem; display: flex; flex-direction: column; justify-content: center;",
+                h3 {
+                  style: "font-size: 1rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;",
+                  "⛳️ Arlington Bucket Golf League"
+                }
+                p {
+                  style: "font-size: 0.875rem; color: #6b7280;",
+                  "Saturday, July 13 – 3:00 PM · Quincy Park, VA"
+                }
+                p {
+                  style: "font-size: 0.875rem; color: #dc2626; margin-top: 0.25rem;",
+                  "Only 3 slots left"
+                }
+                a {
+                  href: "/event/bucket-golf-arlington",
+                  style: "
+                    display: inline-block;
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                    color: #4f46e5;
+                    text-decoration: none;
+                    padding: 0.5rem 1rem;
+                    background-color: #eef2ff;
+                    border-radius: 9999px;
+                    margin-top: 0.75rem;
+                    transition: background-color 0.2s;
+                    flex-shrink: 0;
+                    align-self: start;
+                  ",
+                  "View Event"
+                }
+              }
+            }
+            }
         }
 
       }
@@ -115,11 +306,12 @@ pub fn Dashboard() -> Element {
 pub fn CreateEventForm() -> Element {
   rsx!(
     div {
+      class: "event-form",
       style: "
         margin: 0.5rem auto;
         background-color: white;
         padding: 1.5rem;
-        border-radius: 9999px;
+        border-radius: 2rem;
         box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         max-width: 100%;
         width: 100%;
@@ -134,30 +326,29 @@ pub fn CreateEventForm() -> Element {
         r#type: "text",
         placeholder: "Event location",
         style: "
-          flex: 1;
           min-width: 10rem;
           padding: 0.75rem 1rem;
           border: none;
           background-color: #f3f4f6;
           border-radius: 9999px;
           font-size: 0.95rem;
+          width: 100%;
         "
       }
       input {
         r#type: "datetime-local",
         style: "
-          flex: 1;
           min-width: 12rem;
           padding: 0.75rem 1rem;
           border: none;
           background-color: #f3f4f6;
           border-radius: 9999px;
           font-size: 0.95rem;
+          width: 100%;
         "
       }
       select {
         style: "
-          flex: 1;
           min-width: 10rem;
           padding: 0.75rem 1rem;
           border: none;
@@ -165,6 +356,7 @@ pub fn CreateEventForm() -> Element {
           border-radius: 9999px;
           font-size: 0.95rem;
           color: #374151;
+          width: 100%;
         ",
         option { value: "", disabled: true, selected: true, "Sport" }
         option { value: "basketball", "Basketball" }
@@ -186,6 +378,7 @@ pub fn CreateEventForm() -> Element {
             font-weight: 600;
             cursor: pointer;
             font-size: 0.95rem;
+            width: 100%;
           ",
           "Create"
         }

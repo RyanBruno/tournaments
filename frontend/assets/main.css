@@ -44,4 +44,21 @@ body {
 }
 
 
+/* Add this somewhere in your global CSS */
+@keyframes sparkle {
+  0% { background-position: 0 0; }
+  100% { background-position: 1000px 1000px; }
+}
 
+@media (min-width: 640px) {
+  .event-form > * {
+    flex: 0 1 calc(50% - 0.5rem); /* 2 per row on small+ screens */
+    flex-wrap: wrap;
+  }
+}
+@media (min-width: 1024px) {
+  .event-form > * {
+    flex: 0 1 calc(25% - 1rem); /* 4 per row on large+ screens */
+    flex-wrap: nowrap;
+  }
+}
