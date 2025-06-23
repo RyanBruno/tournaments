@@ -1,3 +1,6 @@
+
+pub mod dashboard;
+
 use http::Request;
 use http::Response;
 use http::StatusCode;

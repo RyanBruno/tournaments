@@ -9,8 +9,8 @@ use backend::{
 use backend::{
   not_found_route,
   error_route,
+  dashboard_route,
 };
-use backend::api::api_route;
 
 #[allow(unused_imports)]
 use log::{error, warn, info, debug, trace};
@@ -22,7 +22,6 @@ pub fn main() -> Result<(), Box<dyn Error>>{
   let listener = AsyncTcpListener::new(8000, executor.clone()).unwrap();
   let server = AsyncHttpRequest::new(listener, executor.clone());
 
-
   executor.clone().spawn(async move {
     loop {
       /* Wait for a new request */
@@ -30,7 +29,23 @@ pub fn main() -> Result<(), Box<dyn Error>>{
 
       /* Process the request */
       let response = match request.uri().path() {
-        "/api" => api_route(request),
+        /* Screens */
+        // Dashboard
+        "/dashboard" => dashboard_route(request),
+        "/announcments" => panic!(),
+        "/create-event" => panic!(),
+        "/list-events" => panic!(), // Reverse index by location
+
+        // Event
+        "/modify-event" => panic!(),
+        "/get-event" => panic!(),
+        "/event-register" => panic!(),
+
+        // Webpage
+        "/signup" => panic!(),
+        "/login" => panic!(),
+        "/create-platform" => panic!(),
+
         _ => not_found_route(request),
       }.unwrap_or_else(|e| {
         error!("Error processing request: {e}");

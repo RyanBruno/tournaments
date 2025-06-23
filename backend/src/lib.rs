@@ -23,6 +23,8 @@ pub use crate::utils::responses::{
 };
 
 pub mod api;
+pub use crate::api::dashboard::dashboard_route;
+
 pub mod database;
 pub use crate::database::KVStore;
 pub use crate::database::Patch;

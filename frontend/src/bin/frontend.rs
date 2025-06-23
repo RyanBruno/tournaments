@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use frontend::Route;
+use frontend::{ToastContext, Route, Toast};
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.css");
@@ -22,11 +22,17 @@ fn App() -> Element {
         splash: true,
     }));
 
+    use_context_provider(|| Signal::new(ToastContext {
+        toast: None,
+    }));
+
+
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_CSS }
         //document::Link { rel: "stylesheet", href: TAILWIND_CSS }
         Router::<Route> {}
+        Toast {}
     }
 }
 
