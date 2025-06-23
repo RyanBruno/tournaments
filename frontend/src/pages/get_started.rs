@@ -15,7 +15,7 @@ pub fn GetStarted() -> Element {
                 },
                 Link { to: Route::Signup {},
                   div { style: "text-align: center; margin-top: 2rem;",
-                      button { style: "background-color: #4f46e5; color: white; font-weight: 600; padding: 0.75rem 1.5rem; border-radius: 0.5rem; border: none; cursor: pointer;", "Start Now" }
+                      button { style: "background-color: #EA3E4E; color: white; font-weight: 600; padding: 0.75rem 1.5rem; border-radius: 0.5rem; border: none; cursor: pointer;", "Start Now" }
                   }
               }
             }
@@ -38,7 +38,7 @@ pub fn ConfigurePlatform() -> Element {
                       style: "font-size: 0.875rem; color: #6b7280; margin-top: -0.75rem; margin-bottom: 0.5rem;",
                       "DNS update instructions will be sent to your account's email"
                     }
-                    button { style: "background-color: #4f46e5; color: white; font-weight: 600; padding: 0.75rem 1.5rem; border-radius: 0.5rem; border: none; cursor: pointer;", "Save & Continue" }
+                    button { style: "background-color: #EA3E4E; color: white; font-weight: 600; padding: 0.75rem 1.5rem; border-radius: 0.5rem; border: none; cursor: pointer;", "Save & Continue" }
                 }
             }
         }
@@ -55,15 +55,15 @@ pub fn InsightsDashboard() -> Element {
                 div { style: "display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; text-align: center;",
                     div { style: "padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; background: #f3f4f6;",
                         h3 { style: "font-size: 1.25rem; font-weight: 600;", "Members" },
-                        p { style: "font-size: 2rem; color: #4f46e5;", "1,204" }
+                        p { style: "font-size: 2rem; color: #EA3E4E;", "1,204" }
                     }
                     div { style: "padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; background: #f3f4f6;",
                         h3 { style: "font-size: 1.25rem; font-weight: 600;", "Events Run" },
-                        p { style: "font-size: 2rem; color: #4f46e5;", "78" }
+                        p { style: "font-size: 2rem; color: #EA3E4E;", "78" }
                     }
                     div { style: "padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; background: #f3f4f6;",
                         h3 { style: "font-size: 1.25rem; font-weight: 600;", "Weekly Engagement" },
-                        p { style: "font-size: 2rem; color: #4f46e5;", "64%" }
+                        p { style: "font-size: 2rem; color: #EA3E4E;", "64%" }
                     }
                 }
             }

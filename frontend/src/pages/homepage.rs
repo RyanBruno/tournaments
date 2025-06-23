@@ -8,7 +8,7 @@ pub fn Homepage() -> Element {
         div { style: "min-height: 100vh; background-color: #f9fafb; color: #1f2937; font-family: sans-serif;",
             // Nav
             nav { style: "display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; background-color: white; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);",
-                div { style: "font-size: 1.5rem; font-weight: bold; color: #4f46e5;", "Konvo" }
+                div { style: "font-size: 1.5rem; font-weight: bold; color: #EA3E4E;", "Konvo" }
                 div { style: "display: flex; gap: 1.5rem; font-size: 0.875rem; font-weight: 500; color: #4b5563;",
                     a { href: "#features", style: "text-decoration: none; color: inherit; transition: color 0.3s;", onmouseover: |_| {}, "Features" }
                     a { href: "#pricing", style: "text-decoration: none; color: inherit; transition: color 0.3s;", onmouseover: |_| {}, "Pricing" }
@@ -49,7 +49,7 @@ section {
         to: Route::GetStarted {},
         button {
           style: "
-            background-color: #4f46e5;
+            background-color: #EA3E4E;
             color: white;
             font-weight: 600;
             padding: 0.75rem 1.5rem;
@@ -68,8 +68,8 @@ section {
       button {
         style: "
           background-color: white;
-          color: #4f46e5;
-          border: 2px solid #4f46e5;
+          color: #EA3E4E;
+          border: 2px solid #EA3E4E;
           padding: 0.75rem 1.5rem;
           border-radius: 0.5rem;
           font-weight: 600;
@@ -138,7 +138,7 @@ section {
                   ",
                   "onmouseover": "this.style.transform='scale(1.03)'",
                   "onmouseout": "this.style.transform='scale(1)'",
-                  h3 { style: "font-size: 1.25rem; font-weight: 700; color: #4f46e5;", "🎟️ Effortless Event Creation" }
+                  h3 { style: "font-size: 1.25rem; font-weight: 700; color: #EA3E4E;", "🎟️ Effortless Event Creation" }
                   p { style: "color: #374151; margin-top: 0.75rem; line-height: 1.6;",
                     "Host in-person and virtual events in seconds. Auto-invite your community, set RSVPs, and share with a link."
                   }
@@ -155,7 +155,7 @@ section {
                   ",
                   "onmouseover": "this.style.transform='scale(1.03)'",
                   "onmouseout": "this.style.transform='scale(1)'",
-                  h3 { style: "font-size: 1.25rem; font-weight: 700; color: #4f46e5;", "📈 Deep Community Insights" }
+                  h3 { style: "font-size: 1.25rem; font-weight: 700; color: #EA3E4E;", "📈 Deep Community Insights" }
                   p { style: "color: #374151; margin-top: 0.75rem; line-height: 1.6;",
                     "Visual dashboards show engagement trends, power users, and growth over time — no spreadsheet required."
                   }
@@ -172,7 +172,7 @@ section {
                   ",
                   "onmouseover": "this.style.transform='scale(1.03)'",
                   "onmouseout": "this.style.transform='scale(1)'",
-                  h3 { style: "font-size: 1.25rem; font-weight: 700; color: #4f46e5;", "🤝 Real-Time Collaboration" }
+                  h3 { style: "font-size: 1.25rem; font-weight: 700; color: #EA3E4E;", "🤝 Real-Time Collaboration" }
                   p { style: "color: #374151; margin-top: 0.75rem; line-height: 1.6;",
                     "Build alongside teammates with shared access, role-based permissions, and live updates across your org."
                   }
@@ -202,7 +202,7 @@ section {
               style: "
                 position: relative;
                 padding: 5rem 2rem;
-                background: radial-gradient(circle at top left, #6366f1, #4f46e5);
+                background: radial-gradient(circle at top left, #6366f1, #EA3E4E);
                 color: white;
                 text-align: center;
                 font-family: sans-serif;
@@ -254,7 +254,7 @@ section {
                 button {
                   style: "
                     background: linear-gradient(to right, #ffffff, #e0e7ff);
-                    color: #4f46e5;
+                    color: #EA3E4E;
                     font-weight: 800;
                     font-size: 1.125rem;
                     padding: 0.85rem 2.25rem;

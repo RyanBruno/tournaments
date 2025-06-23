@@ -17,31 +17,32 @@ pub fn Dashboard() -> Element {
 #[component]
 pub fn DashboardHelper(dashboard_data: DashboardApi) -> Element {
     rsx!(DashboardLayout {
-        announcment: dashboard_data.announcment,
-        events: dashboard_data.events,
+      name: dashboard_data.name,
+      announcment: dashboard_data.announcment,
+      events: dashboard_data.events,
     })
 }
 
 #[component]
-pub fn DashboardLayout(announcment: String, events: Vec<Event>) -> Element {
+pub fn DashboardLayout(name: String, announcment: String, events: Vec<Event>) -> Element {
     rsx!(
       div { style: "min-height: 100vh; background-color: #f9fafb; font-family: sans-serif; padding: 2rem;",
         div { style: "max-width: 60rem; margin: 0 auto;",
           // Header
           div { style: "display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;",
-            h1 { style: "font-size: 2rem; font-weight: 700; color: #111827;", "Your Konvo HQ" }
+            h1 { style: "font-size: 2rem; font-weight: 700; color: #111827;", "{name}" }
 
             div { style: "display: flex; gap: 1rem; align-items: center;",
               Link {
                 to: Route::CreateEvent {},
                 button {
-                  style: "background-color: #4f46e5; color: white; font-weight: 600; padding: 0.5rem 1rem; border-radius: 0.375rem; border: none; cursor: pointer;",
+                  style: "background-color: #EA3E4E; color: white; font-weight: 600; padding: 0.5rem 1rem; border-radius: 0.375rem; border: none; cursor: pointer;",
                   "＋ Create Event"
                 }
               }
               a {
                 href: "/profile",
-                style: "display: inline-block; width: 2.5rem; height: 2.5rem; border-radius: 9999px; background-color: #e5e7eb; overflow: hidden; text-align: center; line-height: 2.5rem; font-weight: 600; color: #4f46e5; text-decoration: none;",
+                style: "display: inline-block; width: 2.5rem; height: 2.5rem; border-radius: 9999px; background-color: #e5e7eb; overflow: hidden; text-align: center; line-height: 2.5rem; font-weight: 600; color: #EA3E4E; text-decoration: none;",
                 "U"  // replace with user initial or image if available
               }
             }
@@ -176,7 +177,7 @@ pub fn EventCard(event: Event) -> Element {
             display: inline-block;
             font-size: 0.875rem;
             font-weight: 500;
-            color: #4f46e5;
+            color: #EA3E4E;
             text-decoration: none;
             padding: 0.5rem 1rem;
             background-color: #eef2ff;
@@ -262,7 +263,7 @@ pub fn CreateEventForm() -> Element {
             r#type: "submit",
             style: "
             padding: 0.75rem 1.5rem;
-            background-color: #4f46e5;
+            background-color: #EA3E4E;
             color: white;
             border: none;
             border-radius: 9999px;

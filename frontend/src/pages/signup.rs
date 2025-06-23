@@ -36,7 +36,7 @@ pub fn Signup() -> Element {
             to: Route::ConfigurePlatform {},
             button {
               r#type: "submit",
-              style: "margin-top: 1rem; background-color: #4f46e5; color: white; font-weight: 600; padding: 0.75rem; border: none; border-radius: 0.5rem; cursor: pointer;",
+              style: "margin-top: 1rem; background-color: #EA3E4E; color: white; font-weight: 600; padding: 0.75rem; border: none; border-radius: 0.5rem; cursor: pointer;",
               "Sign Up"
             }
           }
@@ -45,7 +45,7 @@ pub fn Signup() -> Element {
           to: Route::Login {},
           p { style: "margin-top: 1rem; text-align: center; font-size: 0.875rem; color: #6b7280;",
             "Already have an account? "
-            a { href: "#", style: "color: #4f46e5; text-decoration: none; font-weight: 500;", "Sign in" }
+            a { href: "#", style: "color: #EA3E4E; text-decoration: none; font-weight: 500;", "Sign in" }
           }
         }
       }

@@ -18,6 +18,7 @@ pub struct Event {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DashboardApi {
   pub announcment: String,
+  pub name: String,
   pub events: Vec<Event>,
 }
 
@@ -25,6 +26,7 @@ pub fn dashboard_route(_req: Request<()>) -> http::Result<Response<Vec<u8>>>
 {
 
     let dummy_data = DashboardApi {
+    name: "Bucket Golf Leagues".to_string(),
     announcment: "⛳️ New summer leagues of bucket golf just dropped. Rally your crew and start swinging!".to_string(),
     events: vec![
       Event {

@@ -17,6 +17,7 @@ pub struct Event {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct DashboardApi {
+  pub name: String,
   pub announcment: String,
   pub events: Vec<Event>,
 }

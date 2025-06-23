@@ -67,7 +67,7 @@ pub fn CreateEvent() -> Element {
             r#type: "submit",
             style: "
               margin-top: 1rem;
-              background-color: #4f46e5;
+              background-color: #EA3E4E;
               color: white;
               font-weight: 600;
               padding: 0.75rem;
