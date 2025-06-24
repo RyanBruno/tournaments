@@ -38,7 +38,7 @@ pub trait Patch<T> {
 pub struct KVStore<T, P: Patch<T>> {
   snapshot_path: PathBuf,
   event_path: PathBuf,
-  mmaps: Vec<Mmap>,
+  pub mmaps: Vec<Mmap>,
   _marker_t: std::marker::PhantomData<T>,
   _marker_p: std::marker::PhantomData<P>,
 }

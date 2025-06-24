@@ -1,11 +1,11 @@
 use dioxus::prelude::*;
-use reqwest::Response;
 use crate::{ToastContext, ToastKind, ToastMessage};
 
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Event {
+  pub tenent_id: String,
   pub id: String,
   pub name: String,
   pub location: String,
@@ -25,7 +25,7 @@ pub struct DashboardApi {
 
 pub fn use_dashboard_api(mut toast: Signal<ToastContext>) -> Resource<Option<DashboardApi>> {
     return use_resource(move || async move {
-      let result = reqwest::get("http://localhost:8000/dashboard").await;
+      let result = reqwest::get("http://localhost:8000/dashboard?tenent_id=1").await;
       let parsed = match result {
         Ok(response) => {
           response.json::<DashboardApi>().await
@@ -35,7 +35,7 @@ pub fn use_dashboard_api(mut toast: Signal<ToastContext>) -> Resource<Option<Das
       
       match parsed {
         Ok(response) => Some(response),
-        Err(e) => {
+        Err(_e) => {
           toast.write().toast = Some(ToastMessage {
             message: format!("Failed to fetch /dashboard"),
             kind: ToastKind::Error,

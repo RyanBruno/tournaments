@@ -237,6 +237,7 @@ dependencies = [
  "rkyv_derive",
  "serde",
  "serde_json",
+ "url",
 ]
 
 [[package]]

@@ -1,19 +1,10 @@
 use http::Request;
 use http::Response;
 use http::StatusCode;
+use std::error::Error;
 
 use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Event {
-  pub id: String,
-  pub name: String,
-  pub location: String,
-  pub date: String,
-  pub image: String,
-  pub banner: Option<String>,
-  pub upsell: Option<String>,
-}
+use crate::{Event, EventPatch, IndexedStoreHandle};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DashboardApi {
@@ -22,14 +13,18 @@ pub struct DashboardApi {
   pub events: Vec<Event>,
 }
 
-pub fn dashboard_route(_req: Request<()>) -> http::Result<Response<Vec<u8>>>
-{
+pub fn dashboard_route(
+  _req: Request<()>,
+  event_store: IndexedStoreHandle<Event, EventPatch, String>
+) -> Result<Response<Vec<u8>>, Box<dyn Error>> {
+  let events = event_store.query(&"bucket-golf".to_string());
 
-    let dummy_data = DashboardApi {
+  let dummy_data = DashboardApi {
     name: "Bucket Golf Leagues".to_string(),
     announcment: "⛳️ New summer leagues of bucket golf just dropped. Rally your crew and start swinging!".to_string(),
     events: vec![
       Event {
+        tenent_id: "bucket-golf".into(),
         id: "1".into(),
         name: "Arlington Bucket Golf League".into(),
         location: "Quincy Park, VA".into(),
@@ -39,6 +34,7 @@ pub fn dashboard_route(_req: Request<()>) -> http::Result<Response<Vec<u8>>>
         upsell: Some("Only 3 slots left".into()),
       },
       Event {
+        tenent_id: "bucket-golf".into(),
         id: "2".into(),
         name: "DC Mini Putt-Off".into(),
         location: "The Yards, DC".into(),
@@ -50,19 +46,13 @@ pub fn dashboard_route(_req: Request<()>) -> http::Result<Response<Vec<u8>>>
     ],
   };
 
-  let json = match serde_json::to_vec(&dummy_data) {
-    Ok(data) => data,
-    Err(_) => {
-      return Response::builder()
-        .status(StatusCode::INTERNAL_SERVER_ERROR)
-        .body(b"failed to serialize dashboard".to_vec());
-    }
-  };
-  Response::builder()
+  let json = serde_json::to_vec(&dummy_data)?;
+
+  Ok(Response::builder()
     .status(StatusCode::OK)
     .header("Content-Type", "application/json")
     .header("Access-Control-Allow-Origin", "*")
     .header("Access-Control-Allow-Methods", "*")
     .header("Access-Control-Allow-Headers", "*")
-    .body(json)
+    .body(json)?)
 }

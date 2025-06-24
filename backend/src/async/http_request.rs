@@ -7,6 +7,8 @@ use crate::AsyncTcpListener;
 use std::error::Error;
 use crate::NetExecutor;
 use crate::{Receiver, Sender, channel};
+use std::collections::HashMap;
+use url::Url;
 
 
 #[allow(unused_imports)]
@@ -74,13 +76,38 @@ impl AsyncHttpRequestInternal {
     Ok(())
   }
 
-  fn http_parse_request(data: Vec<String>) -> Option<Request<()>> {
+  fn _http_parse_request(data: Vec<String>) -> Option<Request<()>> {
     let mut request_line = data.first()?.splitn(3, ' ');
     
     Request::builder()
       .method(request_line.next()?)
       .uri(request_line.next()?)
       .body(()).ok()
+  }
+
+  fn http_parse_request(data: Vec<String>) -> Option<Request<()>> {
+    let mut request_line = data.first()?.splitn(3, ' ');
+    let method = request_line.next()?;
+    let uri_str = request_line.next()?;
+
+    // Parse URL for query params
+    let full_url = format!("http://localhost{}", uri_str); // dummy base
+    let parsed_url = Url::parse(&full_url).ok()?;
+
+    let query_params: HashMap<String, String> = parsed_url
+      .query_pairs()
+      .map(|(k, v)| (k.to_string(), v.to_string()))
+      .collect();
+
+    // Build the request and insert params into extensions
+    let mut req = Request::builder()
+      .method(method)
+      .uri(uri_str)
+      .body(())
+      .ok()?;
+
+    req.extensions_mut().insert(query_params);
+    Some(req)
   }
 }
 

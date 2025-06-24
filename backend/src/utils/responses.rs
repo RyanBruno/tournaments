@@ -1,6 +1,7 @@
 use http::Request;
 use http::Response;
 use http::StatusCode;
+use std::error::Error;
 
 #[allow(unused_imports)]
 use log::{error, warn, info, debug, trace};
@@ -14,11 +15,11 @@ pub fn serve_route<T>(_: Request<()>, content_type: &str, res: T) -> http::Resul
     .body(res.into())
 }
 
-pub fn not_found_route(_: Request<()>) -> http::Result<Response<Vec<u8>>> {
-  Response::builder()
+pub fn not_found_route(_: Request<()>) -> Result<Response<Vec<u8>>, Box<dyn Error>> {
+  Ok(Response::builder()
     .status(StatusCode::NOT_FOUND)
     .header("Content-Type", "text/html")
-    .body("404 Not Found".into())
+    .body("404 Not Found".into())?)
 }
 
 pub fn error_route() -> Response<Vec<u8>> {

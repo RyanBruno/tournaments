@@ -4,12 +4,14 @@ use backend::{
   NetExecutor,
   AsyncTcpListener,
   AsyncHttpRequest,
+  event_store,
 };
 
 use backend::{
   not_found_route,
   error_route,
   dashboard_route,
+  create_event_route,
 };
 
 #[allow(unused_imports)]
@@ -17,6 +19,7 @@ use log::{error, warn, info, debug, trace};
 
 pub fn main() -> Result<(), Box<dyn Error>>{
   log4rs::init_file("log4rs.yml", Default::default()).unwrap();
+  let event_store = event_store()?;
 
   let executor = NetExecutor::new();
   let listener = AsyncTcpListener::new(8000, executor.clone()).unwrap();
@@ -31,10 +34,8 @@ pub fn main() -> Result<(), Box<dyn Error>>{
       let response = match request.uri().path() {
         /* Screens */
         // Dashboard
-        "/dashboard" => dashboard_route(request),
-        "/announcments" => panic!(),
-        "/create-event" => panic!(),
-        "/list-events" => panic!(), // Reverse index by location
+        "/dashboard" => dashboard_route(request, event_store.clone()),
+        "/create-event" => create_event_route(request, event_store.clone()),
 
         // Event
         "/modify-event" => panic!(),

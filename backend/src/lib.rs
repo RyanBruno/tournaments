@@ -24,8 +24,13 @@ pub use crate::utils::responses::{
 
 pub mod api;
 pub use crate::api::dashboard::dashboard_route;
+pub use crate::api::create_event_route::create_event_route;
 
 pub mod database;
 pub use crate::database::KVStore;
 pub use crate::database::Patch;
 pub use crate::database::EntityId;
+pub use crate::database::indexed_store_handle::IndexedStoreHandle;
+
+pub mod models;
+pub use crate::models::events::{Event, EventPatch, event_store};
