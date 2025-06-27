@@ -11,7 +11,7 @@ use backend::{
   not_found_route,
   error_route,
   dashboard_route,
-  create_event_route,
+  event_details_route,
 };
 
 #[allow(unused_imports)]
@@ -35,7 +35,8 @@ pub fn main() -> Result<(), Box<dyn Error>>{
         /* Screens */
         // Dashboard
         "/dashboard" => dashboard_route(request, event_store.clone()),
-        "/create-event" => create_event_route(request, event_store.clone()),
+        //"/create-event" => create_event_route(request, event_store.clone()),
+        "/event-details" => event_details_route(request, event_store.clone()),
 
         // Event
         "/modify-event" => panic!(),

@@ -6,3 +6,5 @@ pub mod get_started;
 pub mod not_found;
 pub mod dashboard;
 pub mod create_event;
+pub mod event_details;
+pub mod event_register;

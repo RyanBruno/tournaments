@@ -171,23 +171,25 @@ pub fn EventCard(event: Event) -> Element {
               "{event.upsell.clone().unwrap()}"
             }
           }
-          a {
-            href: "/event/bucket-golf-arlington",
-            style: "
-            display: inline-block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #EA3E4E;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            background-color: #eef2ff;
-            border-radius: 9999px;
-            margin-top: 0.75rem;
-            transition: background-color 0.2s;
-            flex-shrink: 0;
-            align-self: start;
-          ",
-            "View Event"
+          Link {
+            to: Route::EventDetails { id: event.id.clone() },
+            span {
+              style: "
+              display: inline-block;
+              font-size: 0.875rem;
+              font-weight: 500;
+              color: #EA3E4E;
+              text-decoration: none;
+              padding: 0.5rem 1rem;
+              background-color: #eef2ff;
+              border-radius: 9999px;
+              margin-top: 0.75rem;
+              transition: background-color 0.2s;
+              flex-shrink: 0;
+              align-self: start;
+            ",
+              "View Event"
+            }
           }
         }
       }
