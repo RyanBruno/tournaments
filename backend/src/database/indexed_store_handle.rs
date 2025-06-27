@@ -1,5 +1,5 @@
 use std::rc::Rc;
-use std::cell::RefCell;
+use std::cell::{RefCell, Ref};
 use crate::{
   Patch,
   database::indexed_store::IndexedStore,
@@ -50,8 +50,8 @@ where
     snapshot_path: PathBuf,
     event_path: PathBuf,
     partitions: usize,
-    extract_keys: fn(&T::Archived) -> K,
-    extract_keys_t: fn(&T) -> K,
+    extract_keys: fn(&T::Archived) -> Vec<K>,
+    extract_keys_t: fn(&T) -> Vec<K>,
   ) -> Result<Self, Box<dyn Error>> {
     let store = IndexedStore::new(snapshot_path, event_path, partitions, extract_keys, extract_keys_t)?;
     Ok(Self {
@@ -85,5 +85,8 @@ where
 
   pub fn raw(&self) -> Rc<RefCell<IndexedStore<T, P, K>>> {
     Rc::clone(&self.inner)
+  }
+  pub fn borrow_inner(&self) -> Ref<IndexedStore<T, P, K>> {
+    self.inner.borrow()
   }
 }

@@ -1,10 +1,16 @@
 use std::error::Error;
+use std::fs;
+use std::io;
+use std::path::Path;
 
 use backend::{
   NetExecutor,
   AsyncTcpListener,
   AsyncHttpRequest,
   event_store,
+  Event,
+  IndexedStoreHandle,
+  EventPatch,
 };
 
 use backend::{
@@ -13,12 +19,74 @@ use backend::{
   dashboard_route,
   event_details_route,
 };
+fn clear_directory(path: &str) -> io::Result<()> {
+  if Path::new(path).exists() {
+    for entry in fs::read_dir(path)? {
+      let entry = entry?;
+      let path = entry.path();
+      if path.is_file() {
+        fs::remove_file(path)?;
+      } else if path.is_dir() {
+        fs::remove_dir_all(path)?;
+      }
+    }
+  }
+  Ok(())
+}
+
+pub fn seed_example_events(event_store: &IndexedStoreHandle<Event, EventPatch, String>) {
+  let examples = vec![
+    Event {
+      tenent_id: "bucket-golf".into(),
+      id: "1".into(),
+      name: "Arlington Bucket Golf League".into(),
+      location: "Quincy Park, VA".into(),
+      date: "Saturday, July 13 – 3:00 PM".into(),
+      image: "/static/bucket-golf.jpg".into(),
+      banner: Some("⚡ Almost Sold Out".into()),
+      upsell: Some("Only 3 slots left".into()),
+    },
+    Event {
+      tenent_id: "bucket-golf".into(),
+      id: "2".into(),
+      name: "Launch Meetup".into(),
+      location: "Liberty Park, DC".into(),
+      date: "Monday, July 15 – 5:00 PM".into(),
+      image: "/static/launch-meetup.jpg".into(),
+      banner: None,
+      upsell: None,
+    },
+    Event {
+      tenent_id: "bucket-golf".into(),
+      id: "3".into(),
+      name: "Weekly Planning Session".into(),
+      location: "National Mall, DC".into(),
+      date: "Wednesday, July 17 – 12:00 PM".into(),
+      image: "/static/planning.jpg".into(),
+      banner: Some("🆕 New".into()),
+      upsell: Some("Limited spots available".into()),
+    },
+  ];
+
+  for event in examples {
+    let key = "bucket-golf".to_string(); // or tenant ID, community ID, etc.
+    if let Err(e) = event_store.create(key.clone(), event.clone()) {
+      eprintln!("Failed to insert event {:?}: {:?}", event.name, e);
+    }
+  }
+
+  println!("✅ Example events seeded.");
+}
+
 
 #[allow(unused_imports)]
 use log::{error, warn, info, debug, trace};
 
 pub fn main() -> Result<(), Box<dyn Error>>{
   log4rs::init_file("log4rs.yml", Default::default()).unwrap();
+
+  clear_directory("data/events/")?;
+  clear_directory("data/snapshots/")?;
   let event_store = event_store()?;
 
   let executor = NetExecutor::new();
@@ -30,13 +98,19 @@ pub fn main() -> Result<(), Box<dyn Error>>{
       /* Wait for a new request */
       let (request, mut stream) = server.next_request().await.unwrap();
 
+      //println!(request.)
       /* Process the request */
       let response = match request.uri().path() {
         /* Screens */
         // Dashboard
-        "/dashboard" => dashboard_route(request, event_store.clone()),
+        "/dashboard" => dashboard_route(
+          request, event_store.clone(),
+          request.headers().get("x-tenent_id").and_then(|v| v.to_str().ok()),
+        ),
         //"/create-event" => create_event_route(request, event_store.clone()),
-        "/event-details" => event_details_route(request, event_store.clone()),
+        "/event-details" => event_details_route(
+          request, event_store.clone(),
+        ),
 
         // Event
         "/modify-event" => panic!(),

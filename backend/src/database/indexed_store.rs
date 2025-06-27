@@ -29,8 +29,8 @@ where
 {
   pub kv: KVStore<T, P>,
   index: HashMap<K, HashSet<EntityId>>,
-  extract_keys: fn(&T::Archived) -> K,
-  extract_keys_t: fn(&T) -> K,
+  extract_keys: fn(&T::Archived) -> Vec<K>,
+  extract_keys_t: fn(&T) -> Vec<K>,
 }
 
 impl<T, P, K> IndexedStore<T, P, K>
@@ -49,8 +49,8 @@ where
     snapshot_path: PathBuf,
     event_path: PathBuf,
     partitions: usize,
-    extract_keys: fn(&T::Archived) -> K,
-    extract_keys_t: fn(&T) -> K,
+    extract_keys: fn(&T::Archived) -> Vec<K>,
+    extract_keys_t: fn(&T) -> Vec<K>,
   ) -> Result<Self, Box<dyn Error>> {
     let kv = KVStore::new(snapshot_path, event_path, partitions)?;
     let mut index: HashMap<K, HashSet<EntityId>> = HashMap::new();
@@ -61,8 +61,10 @@ where
       let map = access::<ArchivedHashMap<ArchivedString, T::Archived>, RError>(shard)?;
       for (archived_id, archived_entity) in map.iter() {
         let id: EntityId = deserialize::<EntityId, RError>(archived_id)?;
-        let key = extract_keys(&archived_entity);
-        index.entry(key).or_default().insert(id.clone());
+        let keys = extract_keys(&archived_entity);
+        keys.iter().for_each(|key| {
+          index.entry(key.clone()).or_default().insert(id.clone());
+        });
       }
     }
 
@@ -76,8 +78,10 @@ where
 
   pub fn create(&mut self, id: EntityId, entity: T) -> Result<(), Box<dyn Error>> {
     self.kv.create(id.clone(), entity.clone())?;
-    let key = (self.extract_keys_t)(&entity);
-    self.index.entry(key).or_default().insert(id.clone());
+    let keys = (self.extract_keys_t)(&entity);
+    keys.iter().for_each(|key| {
+      self.index.entry(key.clone()).or_default().insert(id.clone());
+    });
     Ok(())
   }
 
@@ -91,28 +95,34 @@ where
 
     // Remove old keys
     if let Some(old_entity) = old {
-      let key = (self.extract_keys)(&old_entity);
-      if let Some(set) = self.index.get_mut(&key) {
-        set.remove(&id);
-      }
+      let keys = (self.extract_keys)(&old_entity);
+      keys.iter().for_each(|key| {
+        if let Some(set) = self.index.get_mut(key) {
+          set.remove(&id);
+        }
+      });
     }
 
     // Apply update
     self.kv.update(id.clone(), patch)?;
 
     // Insert new keys
-    let key = (self.extract_keys_t)(&new_entity);
-    self.index.entry(key).or_default().insert(id.clone());
+    let keys = (self.extract_keys_t)(&new_entity);
+    keys.iter().for_each(|key| {
+      self.index.entry(key.clone()).or_default().insert(id.clone());
+    });
 
     Ok(())
   }
 
   pub fn delete(&mut self, id: EntityId) -> Result<(), Box<dyn Error>> {
     if let Some(entity) = self.kv.read(id.clone())? {
-      let key = (self.extract_keys)(&entity);
-      if let Some(set) = self.index.get_mut(&key) {
-        set.remove(&id);
-      }
+      let keys = (self.extract_keys)(&entity);
+      keys.iter().for_each(|key| {
+        if let Some(set) = self.index.get_mut(key) {
+          set.remove(&id);
+        }
+      });
     }
 
     self.kv.delete(id)
@@ -120,6 +130,33 @@ where
 
   pub fn query(&self, key: &K) -> Vec<EntityId> {
     self.index.get(key).map(|s| s.iter().cloned().collect()).unwrap_or_default()
+  }
+
+  pub fn query_entities(&self, key: &K) -> Vec<&T::Archived> {
+    self
+      .query(key)
+      .into_iter()
+      .filter_map(|id| self.kv.read(id).ok().and_then(|e| e.map(|e| e)))
+      .collect()
+  }
+  pub fn query_owned_entities(&self, key: &K) -> Vec<T> {
+    self.query_entities(key)
+      .into_iter()
+      .map(|e| deserialize::<T, RError>(e).unwrap_or_default())
+      .collect()
+  }
+
+  pub fn read(&self, id: EntityId) -> Result<Option<&T::Archived>, Box<dyn Error>> {
+    self.kv.read(id)
+  }
+
+  pub fn read_owned(&self, id: EntityId) -> Result<Option<T>, Box<dyn Error>> {
+    self.read(id)
+      .map(|opt| {
+        opt.map(|archived| {
+          deserialize::<T, RError>(archived).unwrap_or_default()
+        })
+      })
   }
 
   pub fn inner(&self) -> &KVStore<T, P> {

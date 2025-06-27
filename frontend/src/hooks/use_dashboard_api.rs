@@ -25,7 +25,9 @@ pub struct DashboardApi {
 
 pub fn use_dashboard_api(mut toast: Signal<ToastContext>) -> Resource<Option<DashboardApi>> {
     return use_resource(move || async move {
-      let result = reqwest::get("http://localhost:8000/dashboard?tenent_id=1").await;
+      let result = reqwest::get(
+        "http://localhost:8000/dashboard?tenent_id=bucket-golf",
+      ).await;
       let parsed = match result {
         Ok(response) => {
           response.json::<DashboardApi>().await

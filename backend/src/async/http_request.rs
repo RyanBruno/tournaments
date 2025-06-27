@@ -1,5 +1,4 @@
-use http::Request;
-use http::Response;
+use http::{Request, Response, Method, Uri, HeaderName, HeaderValue};
 use std::time::Duration;
 use crate::GenericError;
 use crate::AsyncTcpStream;
@@ -76,16 +75,36 @@ impl AsyncHttpRequestInternal {
     Ok(())
   }
 
-  fn _http_parse_request(data: Vec<String>) -> Option<Request<()>> {
-    let mut request_line = data.first()?.splitn(3, ' ');
-    
-    Request::builder()
-      .method(request_line.next()?)
-      .uri(request_line.next()?)
-      .body(()).ok()
-  }
 
   fn http_parse_request(data: Vec<String>) -> Option<Request<()>> {
+    let mut lines = data.into_iter();
+    let request_line = lines.next()?;
+    let mut parts = request_line.splitn(3, ' ');
+
+    let method = parts.next()?.parse::<Method>().ok()?;
+    let uri = parts.next()?.parse::<Uri>().ok()?;
+
+    let mut req = Request::builder()
+      .method(method)
+      .uri(uri);
+
+    for line in lines {
+      if line.trim().is_empty() {
+        break; // End of headers
+      }
+      if let Some((key, value)) = line.split_once(":") {
+        let name = HeaderName::from_bytes(key.trim().as_bytes()).ok()?;
+        let value = HeaderValue::from_str(value.trim()).ok()?;
+        req.headers_mut()?.insert(name, value);
+      }
+    }
+
+    req
+      .body(())
+      .ok()
+  }
+
+  fn _http_parse_request(data: Vec<String>) -> Option<Request<()>> {
     let mut request_line = data.first()?.splitn(3, ' ');
     let method = request_line.next()?;
     let uri_str = request_line.next()?;

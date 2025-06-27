@@ -61,11 +61,15 @@ impl Patch<Event> for EventPatch {
 
 
 pub fn event_store() -> Result<IndexedStoreHandle<Event, EventPatch, String>, Box<dyn Error>> {
-  fn extract_key(event: &<Event as Archive>::Archived) -> String {
-    rkyv::deserialize::<String, RError>(&event.location).unwrap()
+  fn extract_key(event: &<Event as Archive>::Archived) -> Vec<String> {
+    vec![
+      rkyv::deserialize::<String, RError>(&event.location).unwrap()
+    ]
   }
-  fn extract_key_t(event: &Event) -> String {
-    event.location.clone()
+  fn extract_key_t(event: &Event) -> Vec<String> {
+    vec![
+      event.location.clone()
+    ]
   }
 
   IndexedStoreHandle::<Event, EventPatch, String>::new(

@@ -15,35 +15,16 @@ pub struct DashboardApi {
 
 pub fn dashboard_route(
   _req: Request<()>,
-  event_store: IndexedStoreHandle<Event, EventPatch, String>
+  event_store: IndexedStoreHandle<Event, EventPatch, String>,
+  tenant_id: String,
 ) -> Result<Response<Vec<u8>>, Box<dyn Error>> {
-  let events = event_store.query(&"bucket-golf".to_string());
+  let events = event_store.borrow_inner()
+    .query_owned_entities(&tenant_id);
 
   let dummy_data = DashboardApi {
     name: "Bucket Golf Leagues".to_string(),
     announcment: "⛳️ New summer leagues of bucket golf just dropped. Rally your crew and start swinging!".to_string(),
-    events: vec![
-      Event {
-        tenent_id: "bucket-golf".into(),
-        id: "1".into(),
-        name: "Arlington Bucket Golf League".into(),
-        location: "Quincy Park, VA".into(),
-        date: "Saturday, July 13 – 3:00 PM".into(),
-        image: "/static/bucket-golf.jpg".into(),
-        banner: Some("⚡ Almost Sold Out".into()),
-        upsell: Some("Only 3 slots left".into()),
-      },
-      Event {
-        tenent_id: "bucket-golf".into(),
-        id: "2".into(),
-        name: "DC Mini Putt-Off".into(),
-        location: "The Yards, DC".into(),
-        date: "Sunday, July 21 – 1:00 PM".into(),
-        image: "/static/bucket-golf.jpg".into(),
-        banner: None,
-        upsell: None,
-      }
-    ],
+    events,
   };
 
   let json = serde_json::to_vec(&dummy_data)?;

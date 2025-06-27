@@ -34,4 +34,4 @@ pub use crate::database::EntityId;
 pub use crate::database::indexed_store_handle::IndexedStoreHandle;
 
 pub mod models;
-pub use crate::models::events::{Event, EventPatch, event_store};
+pub use crate::models::events::{Event, ArchivedEvent, EventPatch, event_store};
