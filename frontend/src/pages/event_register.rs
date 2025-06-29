@@ -1,10 +1,13 @@
 use dioxus::prelude::*;
-use crate::{use_event, ToastContext};
+use crate::{use_event, ToastContext, ClientContext};
 const BUCKET_GOLF_SVG: Asset = asset!("/assets/bucket-golf.png");
 
 #[component]
 pub fn RegisterEvent(id: String) -> Element {
-    let data = use_event(id, use_context::<Signal<ToastContext>>());
+    let data = use_event(id,
+      use_context::<Signal<ToastContext>>(),
+      use_context::<Signal<ClientContext>>(),
+    );
 
     match data.read_unchecked().as_ref() {
         Some(Some(event)) => rsx!(RegisterEventInner {

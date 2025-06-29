@@ -14,7 +14,7 @@ pub struct DashboardApi {
 }
 
 pub fn dashboard_route(
-  _req: Request<()>,
+  _req: &Request<()>,
   event_store: IndexedStoreHandle<Event, EventPatch, String>,
   tenant_id: String,
 ) -> Result<Response<Vec<u8>>, Box<dyn Error>> {

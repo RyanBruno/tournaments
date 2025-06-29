@@ -12,7 +12,7 @@ use crate::IndexedStoreHandle;
 
 #[derive(Archive, RkyvDeserialize, RkyvSerialize, Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Event {
-  pub tenent_id: String,
+  pub tenant_id: String,
   pub id: String,
   pub name: String,
   pub location: String,
@@ -63,12 +63,12 @@ impl Patch<Event> for EventPatch {
 pub fn event_store() -> Result<IndexedStoreHandle<Event, EventPatch, String>, Box<dyn Error>> {
   fn extract_key(event: &<Event as Archive>::Archived) -> Vec<String> {
     vec![
-      rkyv::deserialize::<String, RError>(&event.location).unwrap()
+      rkyv::deserialize::<String, RError>(&event.tenant_id).unwrap()
     ]
   }
   fn extract_key_t(event: &Event) -> Vec<String> {
     vec![
-      event.location.clone()
+      event.tenant_id.clone()
     ]
   }
 

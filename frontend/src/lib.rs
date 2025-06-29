@@ -13,6 +13,7 @@ pub mod context;
 pub use context::toast::ToastContext;
 pub use context::toast::ToastKind;
 pub use context::toast::Toast as ToastMessage;
+pub use context::client::ClientContext;
 
 pub mod pages;
 pub use pages::homepage::Homepage;

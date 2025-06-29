@@ -37,7 +37,7 @@ fn clear_directory(path: &str) -> io::Result<()> {
 pub fn seed_example_events(event_store: &IndexedStoreHandle<Event, EventPatch, String>) {
   let examples = vec![
     Event {
-      tenent_id: "bucket-golf".into(),
+      tenant_id: "bucket-golf".into(),
       id: "1".into(),
       name: "Arlington Bucket Golf League".into(),
       location: "Quincy Park, VA".into(),
@@ -47,7 +47,7 @@ pub fn seed_example_events(event_store: &IndexedStoreHandle<Event, EventPatch, S
       upsell: Some("Only 3 slots left".into()),
     },
     Event {
-      tenent_id: "bucket-golf".into(),
+      tenant_id: "bucket-golf".into(),
       id: "2".into(),
       name: "Launch Meetup".into(),
       location: "Liberty Park, DC".into(),
@@ -57,7 +57,7 @@ pub fn seed_example_events(event_store: &IndexedStoreHandle<Event, EventPatch, S
       upsell: None,
     },
     Event {
-      tenent_id: "bucket-golf".into(),
+      tenant_id: "bucket-golf".into(),
       id: "3".into(),
       name: "Weekly Planning Session".into(),
       location: "National Mall, DC".into(),
@@ -69,8 +69,7 @@ pub fn seed_example_events(event_store: &IndexedStoreHandle<Event, EventPatch, S
   ];
 
   for event in examples {
-    let key = "bucket-golf".to_string(); // or tenant ID, community ID, etc.
-    if let Err(e) = event_store.create(key.clone(), event.clone()) {
+    if let Err(e) = event_store.create(event.id.clone(), event.clone()) {
       eprintln!("Failed to insert event {:?}: {:?}", event.name, e);
     }
   }
@@ -87,7 +86,9 @@ pub fn main() -> Result<(), Box<dyn Error>>{
 
   clear_directory("data/events/")?;
   clear_directory("data/snapshots/")?;
-  let event_store = event_store()?;
+  let mut event_store = event_store()?;
+  seed_example_events(&event_store);
+  event_store.refresh_snapshot()?;
 
   let executor = NetExecutor::new();
   let listener = AsyncTcpListener::new(8000, executor.clone()).unwrap();
@@ -104,12 +105,17 @@ pub fn main() -> Result<(), Box<dyn Error>>{
         /* Screens */
         // Dashboard
         "/dashboard" => dashboard_route(
-          request, event_store.clone(),
-          request.headers().get("x-tenent_id").and_then(|v| v.to_str().ok()),
+          &request, event_store.clone(),
+          request.headers().get("x-tenant_id")
+            .and_then(|v| v.to_str().ok()).unwrap_or_default()
+            .to_string(),
         ),
         //"/create-event" => create_event_route(request, event_store.clone()),
         "/event-details" => event_details_route(
-          request, event_store.clone(),
+          &request, event_store.clone(),
+          request.headers().get("x-id")
+            .and_then(|v| v.to_str().ok()).unwrap_or_default()
+            .to_string()
         ),
 
         // Event
@@ -122,7 +128,7 @@ pub fn main() -> Result<(), Box<dyn Error>>{
         "/login" => panic!(),
         "/create-platform" => panic!(),
 
-        _ => not_found_route(request),
+        _ => not_found_route(),
       }.unwrap_or_else(|e| {
         error!("Error processing request: {e}");
         error_route()

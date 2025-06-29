@@ -1,11 +1,12 @@
-use crate::{use_dashboard_api, DashboardApi, Event, Route, ToastContext};
+use crate::{use_dashboard_api, DashboardApi, Event, Route, ToastContext, ClientContext};
 use dioxus::prelude::*;
 const BUCKET_GOLF_SVG: Asset = asset!("/assets/bucket-golf.png");
 
 #[component]
 pub fn Dashboard() -> Element {
     let toast = use_context::<Signal<ToastContext>>();
-    let dashboard_data = use_dashboard_api(toast);
+    let client = use_context::<Signal<ClientContext>>();
+    let dashboard_data = use_dashboard_api(toast, client);
 
     match dashboard_data.read_unchecked().as_ref() {
         Some(Some(data)) => rsx!(DashboardHelper {

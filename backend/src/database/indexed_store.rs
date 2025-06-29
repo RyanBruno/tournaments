@@ -61,7 +61,7 @@ where
       let map = access::<ArchivedHashMap<ArchivedString, T::Archived>, RError>(shard)?;
       for (archived_id, archived_entity) in map.iter() {
         let id: EntityId = deserialize::<EntityId, RError>(archived_id)?;
-        let keys = extract_keys(&archived_entity);
+        let keys = extract_keys(archived_entity);
         keys.iter().for_each(|key| {
           index.entry(key.clone()).or_default().insert(id.clone());
         });
@@ -95,7 +95,7 @@ where
 
     // Remove old keys
     if let Some(old_entity) = old {
-      let keys = (self.extract_keys)(&old_entity);
+      let keys = (self.extract_keys)(old_entity);
       keys.iter().for_each(|key| {
         if let Some(set) = self.index.get_mut(key) {
           set.remove(&id);
@@ -117,7 +117,7 @@ where
 
   pub fn delete(&mut self, id: EntityId) -> Result<(), Box<dyn Error>> {
     if let Some(entity) = self.kv.read(id.clone())? {
-      let keys = (self.extract_keys)(&entity);
+      let keys = (self.extract_keys)(entity);
       keys.iter().for_each(|key| {
         if let Some(set) = self.index.get_mut(key) {
           set.remove(&id);
@@ -128,6 +128,10 @@ where
     self.kv.delete(id)
   }
 
+  pub fn refresh_snapshot(&mut self) -> Result<(), Box<dyn Error>> {
+    self.kv.refresh_snapshot()
+  }
+
   pub fn query(&self, key: &K) -> Vec<EntityId> {
     self.index.get(key).map(|s| s.iter().cloned().collect()).unwrap_or_default()
   }
@@ -136,7 +140,8 @@ where
     self
       .query(key)
       .into_iter()
-      .filter_map(|id| self.kv.read(id).ok().and_then(|e| e.map(|e| e)))
+      .filter_map(|id| self.kv.read(id).ok()
+      .and_then(|e| e))
       .collect()
   }
   pub fn query_owned_entities(&self, key: &K) -> Vec<T> {

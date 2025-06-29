@@ -74,6 +74,9 @@ where
   pub fn query(&self, key: &K) -> Vec<EntityId> {
     self.inner.borrow().query(key)
   }
+  pub fn refresh_snapshot(&mut self) -> Result<(), Box<dyn Error>> {
+    self.inner.borrow_mut().refresh_snapshot()
+  }
 
   pub fn kv(&self) -> std::cell::Ref<KVStore<T, P>> {
     std::cell::Ref::map(self.inner.borrow(), |s| &s.kv)

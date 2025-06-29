@@ -91,7 +91,7 @@ where
     };
 
     let mmap = &self.mmaps[shard_index];
-    let map = access::<ArchivedHashMap<ArchivedString, T::Archived>, RError>(&mmap)?;
+    let map = access::<ArchivedHashMap<ArchivedString, T::Archived>, RError>(mmap)?;
 
     if let Some(entity) = map.get(id.as_str()) {
       Ok(Some(entity))
@@ -108,7 +108,7 @@ where
     // Load the snapshot file
     let mut mmaps = Vec::with_capacity(partitions);
     for i in 0..partitions {
-        let path = PathBuf::from(snapshot_path.join(format!("partition_{i}.rkyv")));
+        let path = snapshot_path.join(format!("partition_{i}.rkyv"));
         if !path.exists() {
             let map: HashMap<String, T> = HashMap::new();
             let archived = to_bytes::<RError>(&map)?;

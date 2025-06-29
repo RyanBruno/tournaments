@@ -66,7 +66,7 @@ where
           KVEvent::Deleted(id) => id,
         };
 
-        let shard_index = self.compute_shard_index(&id);
+        let shard_index = self.compute_shard_index(id);
         shard_events.entry(shard_index).or_default().push(event);
       }
     }

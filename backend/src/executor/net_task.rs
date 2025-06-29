@@ -23,6 +23,9 @@ impl NetTask {
     }
   }
 
+  /// # Safety
+  ///
+  /// Unsafe call to poll the future.
   pub unsafe fn poll(&self, ctx: &mut Context<'_>) -> Poll<()> {
     (*self.future.get()).as_mut().poll(ctx)
   }

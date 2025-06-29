@@ -7,11 +7,12 @@ use crate::not_found_route;
 use crate::{Event, EventPatch, IndexedStoreHandle};
 
 pub fn event_details_route(
-  req: Request<()>,
-  event_store: IndexedStoreHandle<Event, EventPatch, String>
+  _req: &Request<()>,
+  event_store: IndexedStoreHandle<Event, EventPatch, String>,
+  id: String,
 ) -> Result<Response<Vec<u8>>, Box<dyn Error>> {
   let event = event_store.borrow_inner()
-    .read_owned("1".to_string());
+    .read_owned(id);
 
   match event {
     Ok(Some(event)) => {
@@ -27,7 +28,7 @@ pub fn event_details_route(
 
     },
     _ => {
-      not_found_route(req)
+      not_found_route()
     }
   }
 }

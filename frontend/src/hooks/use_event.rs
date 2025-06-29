@@ -1,11 +1,11 @@
 use dioxus::prelude::*;
-use crate::{ToastContext, ToastKind, ToastMessage};
+use crate::{ToastContext, ClientContext, ToastKind, ToastMessage};
 
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Event {
-  pub tenent_id: String,
+  pub tenant_id: String,
   pub id: String,
   pub name: String,
   pub location: String,
@@ -16,12 +16,21 @@ pub struct Event {
 }
 
 
-pub fn use_event(id: String, mut toast: Signal<ToastContext>) -> Resource<Option<Event>> {
-    return use_resource(move || {
+pub fn use_event(
+  id: String,
+  mut toast: Signal<ToastContext>,
+  client: Signal<ClientContext>,
+) -> Resource<Option<Event>> {
+    use_resource(move || {
       let id = id.clone();
       async move {
-        let url = format!("http://localhost:8000/event-details?id={}", id.clone());
-        let result = reqwest::get(url).await;
+        let result = client().client.clone().get(
+            "http://localhost:8000/event-details",
+          ).header(
+            "x-id",
+            id,
+          ).send().await;
+
         let parsed = match result {
           Ok(response) => {
             response.json::<Event>().await
@@ -33,12 +42,12 @@ pub fn use_event(id: String, mut toast: Signal<ToastContext>) -> Resource<Option
           Ok(response) => Some(response),
           Err(_e) => {
             toast.write().toast = Some(ToastMessage {
-              message: format!("Failed to fetch /dashboard"),
+              message: "Failed to fetch /dashboard".to_string(),
               kind: ToastKind::Error,
             });
             None
           }
         }
       }
-  });
+  })
 }

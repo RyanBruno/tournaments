@@ -12,13 +12,19 @@ pub fn serve_route<T>(_: Request<()>, content_type: &str, res: T) -> http::Resul
   Response::builder()
     .status(StatusCode::OK)
     .header("Content-Type", content_type)
+    .header("Access-Control-Allow-Origin", "*")
+    .header("Access-Control-Allow-Methods", "*")
+    .header("Access-Control-Allow-Headers", "*")
     .body(res.into())
 }
 
-pub fn not_found_route(_: Request<()>) -> Result<Response<Vec<u8>>, Box<dyn Error>> {
+pub fn not_found_route() -> Result<Response<Vec<u8>>, Box<dyn Error>> {
   Ok(Response::builder()
     .status(StatusCode::NOT_FOUND)
     .header("Content-Type", "text/html")
+    .header("Access-Control-Allow-Origin", "*")
+    .header("Access-Control-Allow-Methods", "*")
+    .header("Access-Control-Allow-Headers", "*")
     .body("404 Not Found".into())?)
 }
 

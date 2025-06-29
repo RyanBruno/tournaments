@@ -1,11 +1,14 @@
 use dioxus::prelude::*;
-use crate::{ToastContext, ToastKind, ToastMessage};
+use crate::{
+  ClientContext,
+  ToastContext, ToastKind, ToastMessage
+};
 
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Event {
-  pub tenent_id: String,
+  pub tenant_id: String,
   pub id: String,
   pub name: String,
   pub location: String,
@@ -23,11 +26,18 @@ pub struct DashboardApi {
 }
 
 
-pub fn use_dashboard_api(mut toast: Signal<ToastContext>) -> Resource<Option<DashboardApi>> {
-    return use_resource(move || async move {
-      let result = reqwest::get(
-        "http://localhost:8000/dashboard?tenent_id=bucket-golf",
-      ).await;
+pub fn use_dashboard_api(
+  mut toast: Signal<ToastContext>,
+  client: Signal<ClientContext>,
+) -> Resource<Option<DashboardApi>> {
+    use_resource(move || async move {
+      let result = client().client.clone().get(
+          "http://localhost:8000/dashboard",
+        ).header(
+          "x-tenant_id",
+          "bucket-golf",
+        ).send().await;
+
       let parsed = match result {
         Ok(response) => {
           response.json::<DashboardApi>().await
@@ -39,11 +49,11 @@ pub fn use_dashboard_api(mut toast: Signal<ToastContext>) -> Resource<Option<Das
         Ok(response) => Some(response),
         Err(_e) => {
           toast.write().toast = Some(ToastMessage {
-            message: format!("Failed to fetch /dashboard"),
+            message: "Failed to fetch /dashboard".to_string(),
             kind: ToastKind::Error,
           });
           None
         }
       }
-    });
+    })
 }
