@@ -84,12 +84,14 @@ use log::{error, warn, info, debug, trace};
 pub fn main() -> Result<(), Box<dyn Error>>{
   log4rs::init_file("log4rs.yml", Default::default()).unwrap();
 
+  /* Clear and seed data for development */
   clear_directory("data/events/")?;
   clear_directory("data/snapshots/")?;
   let mut event_store = event_store()?;
   seed_example_events(&event_store);
   event_store.refresh_snapshot()?;
 
+  /* Start the server */
   let executor = NetExecutor::new();
   let listener = AsyncTcpListener::new(8000, executor.clone()).unwrap();
   let server = AsyncHttpRequest::new(listener, executor.clone());
@@ -99,34 +101,20 @@ pub fn main() -> Result<(), Box<dyn Error>>{
       /* Wait for a new request */
       let (request, mut stream) = server.next_request().await.unwrap();
 
-      //println!(request.)
       /* Process the request */
       let response = match request.uri().path() {
-        /* Screens */
-        // Dashboard
         "/dashboard" => dashboard_route(
           &request, event_store.clone(),
           request.headers().get("x-tenant_id")
             .and_then(|v| v.to_str().ok()).unwrap_or_default()
             .to_string(),
         ),
-        //"/create-event" => create_event_route(request, event_store.clone()),
         "/event-details" => event_details_route(
           &request, event_store.clone(),
           request.headers().get("x-id")
             .and_then(|v| v.to_str().ok()).unwrap_or_default()
             .to_string()
         ),
-
-        // Event
-        "/modify-event" => panic!(),
-        "/get-event" => panic!(),
-        "/event-register" => panic!(),
-
-        // Webpage
-        "/signup" => panic!(),
-        "/login" => panic!(),
-        "/create-platform" => panic!(),
 
         _ => not_found_route(),
       }.unwrap_or_else(|e| {

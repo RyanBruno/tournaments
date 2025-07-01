@@ -8,6 +8,8 @@ pub use hooks::use_event::use_event;
 
 pub mod components;
 pub use components::toast::Toast;
+pub use components::notifications::NotificationsDropdown;
+
 
 pub mod context;
 pub use context::toast::ToastContext;
@@ -26,6 +28,7 @@ pub use pages::dashboard::Dashboard;
 pub use pages::create_event::CreateEvent;
 pub use pages::event_details::EventDetails;
 pub use pages::event_register::RegisterEvent;
+pub use pages::profile::ProfilePage;
 
 #[derive(Routable, Clone, PartialEq)]
 pub enum Route {
@@ -47,6 +50,8 @@ pub enum Route {
     EventDetails { id: String },
     #[route("/event-register/:id")]
     RegisterEvent { id: String },
+    #[route("/profile")]
+    ProfilePage,
     #[route("/:..route")]
     PageNotFound { route: Vec<String> },
 }

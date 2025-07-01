@@ -8,3 +8,4 @@ pub mod dashboard;
 pub mod create_event;
 pub mod event_details;
 pub mod event_register;
+pub mod profile;

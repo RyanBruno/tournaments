@@ -1,4 +1,4 @@
-use crate::{use_dashboard_api, DashboardApi, Event, Route, ToastContext, ClientContext};
+use crate::{NotificationsDropdown, use_dashboard_api, ClientContext, DashboardApi, Event, Route, ToastContext};
 use dioxus::prelude::*;
 const BUCKET_GOLF_SVG: Asset = asset!("/assets/bucket-golf.png");
 
@@ -41,10 +41,13 @@ pub fn DashboardLayout(name: String, announcment: String, events: Vec<Event>) ->
                   "＋ Create Event"
                 }
               }
-              a {
-                href: "/profile",
-                style: "display: inline-block; width: 2.5rem; height: 2.5rem; border-radius: 9999px; background-color: #e5e7eb; overflow: hidden; text-align: center; line-height: 2.5rem; font-weight: 600; color: #EA3E4E; text-decoration: none;",
-                "U"  // replace with user initial or image if available
+              NotificationsDropdown {  }
+              Link {
+                to: Route::ProfilePage {},
+                span {
+                  style: "display: inline-block; width: 2.5rem; height: 2.5rem; border-radius: 9999px; background-color: #e5e7eb; overflow: hidden; text-align: center; line-height: 2.5rem; font-weight: 600; color: #EA3E4E; text-decoration: none;",
+                  "U"  // replace with user initial or image if available
+                }
               }
             }
           }
@@ -63,7 +66,18 @@ pub fn DashboardLayout(name: String, announcment: String, events: Vec<Event>) ->
             style: "text-align: left; font-size: 1.25rem; font-weight: 600; color: #111827; margin-bottom: 0rem;",
             "Create an event"
           }
+
           CreateEventForm {}
+          ActiveEvents {events: vec![Event {
+            tenant_id: "1".to_string(),
+            id: "1".to_string(),
+            name: "⛳️ Summer Bucket Golf League".to_string(),
+            date: "2025-06-01 18:00".to_string(),
+            location: "Arlington, VA".to_string(),
+            image: BUCKET_GOLF_SVG.to_string(),
+            upsell: Some("Early bird registration ends soon!".to_string()),
+            banner: Some("🔥 Limited spots available!".to_string()),
+          }]}
 
           // Events Section
           div {
@@ -75,7 +89,7 @@ pub fn DashboardLayout(name: String, announcment: String, events: Vec<Event>) ->
 
               h2 {
                 style: "font-size: 1.25rem; font-weight: 600; color: #111827;",
-                "Your Upcoming Events"
+                "Upcoming Events"
               }
 
               select {
@@ -280,4 +294,81 @@ pub fn CreateEventForm() -> Element {
         }
       }
     )
+}
+
+#[component]
+pub fn ActiveEvents(events: Vec<Event>) -> Element {
+  if events.is_empty() {
+    return rsx!();
+  }
+
+  rsx!(
+    section {
+      style: "
+        padding: 1rem 0;
+        margin-bottom: 3rem;
+        font-family: sans-serif;
+      ",
+      h2 {
+        style: "
+          font-size: 1.5rem;
+          font-weight: bold;
+          color: #1f2937;
+          text-align: left;
+          margin-bottom: 1rem;
+        ",
+        "Active Events"
+      }
+      ul {
+        style: "
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          padding: 0;
+          margin: 0;
+          list-style: none;
+        ",
+        for event in events.iter() {
+          li {
+            style: "
+              background: white;
+              border-radius: 0.75rem;
+              box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+              padding: 1rem 1.25rem;
+              display: flex;
+              flex-direction: row;
+              align-items: center;
+              justify-content: space-between;
+              width: 100%;
+            ",
+            div {
+              style: "flex-grow: 1;",
+              h3 {
+                style: "font-size: 1.125rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;",
+                "{event.name}"
+              }
+              p {
+                style: "font-size: 0.875rem; color: #6b7280;",
+                "{event.date} · {event.location}"
+              }
+            }
+            a {
+              href: format!("/event/{}", event.id),
+              style: "
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: #4f46e5;
+                background-color: #eef2ff;
+                padding: 0.5rem 1rem;
+                border-radius: 9999px;
+                text-decoration: none;
+                transition: background-color 0.2s ease;
+              ",
+              "View Details"
+            }
+          }
+        }
+      }
+    }
+  )
 }
