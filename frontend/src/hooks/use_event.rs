@@ -15,7 +15,6 @@ pub struct Event {
   pub upsell: Option<String>,
 }
 
-
 pub fn use_event(
   id: String,
   mut toast: Signal<ToastContext>,
@@ -42,7 +41,7 @@ pub fn use_event(
           Ok(response) => Some(response),
           Err(_e) => {
             toast.write().toast = Some(ToastMessage {
-              message: "Failed to fetch /dashboard".to_string(),
+              message: "Failed to fetch /event-details".to_string(),
               kind: ToastKind::Error,
             });
             None

@@ -27,10 +27,12 @@ pub enum DashboardCommand {
   UpdateEvent((String, EntityId, EventPatch)),
 
   /* Users */
-  /* Announcment */
+  /* Dashboard Info */
+  SetAnnouncement((EntityId, String)),
+  SetName((EntityId, String)),
 }
 
-#[derive(Default, Clone, Archive, Serialize, Deserialize, SarDeserialize, SarSerialize)]
+#[derive(Default, Clone, Archive, Serialize, Deserialize)]
 pub enum DashboardModel {
   #[default]
   Noop,
@@ -62,7 +64,15 @@ impl Patch<DashboardModel> for DashboardCommand {
         // Apply patch to event
         patch.apply_to(view.events.iter_mut().find(|e| e.id == id).unwrap());
       },
-      _ => todo!(),
+      (DashboardCommand::SetAnnouncement((_tenant_id, announcement)), DashboardModel::DashboardView(view)) => {
+        // Set announcement in dashboard view
+        view.announcement = announcement;
+      },
+      (DashboardCommand::SetName((_tenant_id, name)), DashboardModel::DashboardView(view)) => {
+        // Set announcement in dashboard view
+        view.name = name;
+      },
+      _ => {},
     }
   }
 }
@@ -82,7 +92,13 @@ impl Command<DashboardModel, DashboardCommand> for DashboardCommand {
         /* Update Tenant's Dashboard */
         kv_store.update(tenant_id.clone(), self.clone())?;
       },
-      _ => todo!(),
+      DashboardCommand::SetAnnouncement((tenant_id, _announcement)) => {
+        kv_store.update(tenant_id.clone(), self.clone())?;
+      },
+      DashboardCommand::SetName((tenant_id, _name)) => {
+        kv_store.update(tenant_id.clone(), self.clone())?;
+      },
+      DashboardCommand::Noop => {},
     }
     Ok(())
   }

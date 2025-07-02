@@ -47,7 +47,7 @@ pub fn use_dashboard_api(
       
       match parsed {
         Ok(response) => Some(response),
-        Err(e) => {
+        Err(_e) => {
           toast.write().toast = Some(ToastMessage {
             message: "Failed to fetch /dashboard".to_string(),
             kind: ToastKind::Error,

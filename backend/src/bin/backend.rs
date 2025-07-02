@@ -74,6 +74,16 @@ pub fn seed_example_events(dashboard_store: &mut DashboardStore) {
     }
   }
 
+  dashboard_store.command(&DashboardCommand::SetName((
+    "bucket-golf".into(),
+    "Bucket Golf Leagues".into(),
+  ))).unwrap();
+
+  dashboard_store.command(&DashboardCommand::SetAnnouncement((
+    "bucket-golf".into(),
+    "⛳️ New summer leagues of bucket golf just dropped. Rally your crew and start swinging!".into(),
+  ))).unwrap();
+
   println!("✅ Example events seeded.");
 }
 
