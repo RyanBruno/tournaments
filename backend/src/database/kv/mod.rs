@@ -54,7 +54,6 @@ impl<T, P> KVStore<T, P>
 where
   T: Archive + Default + Clone
     + for<'a> Serialize<HighSerializer<AlignedVec, ArenaHandle<'a>, RError>>,
-  //for<'a> &'a T: Default,
   <T as Archive>::Archived: Deserialize<T, Strategy<Pool, rkyv::rancor::Error>>,
   for<'a> <T as Archive>::Archived: CheckBytes<Strategy<Validator<ArchiveValidator<'a>, SharedValidator>, rkyv::rancor::Error>>,
   P: Patch<T> + Archive + Default + Clone

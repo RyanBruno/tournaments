@@ -32,6 +32,7 @@ pub use crate::database::KVStore;
 pub use crate::database::Patch;
 pub use crate::database::EntityId;
 pub use crate::database::indexed_store_handle::IndexedStoreHandle;
+pub use crate::database::cqrs::{CQRSStore, Command};
 
 pub mod models;
 pub use crate::models::events::{Event, ArchivedEvent, EventPatch, event_store};
