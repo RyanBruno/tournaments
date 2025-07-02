@@ -1,17 +1,17 @@
 use std::error::Error;
 use crate::{
-  Command,
-  Patch,
-  KVStore,
-  Event,
-  EventPatch,
-  EntityId
+  CQRSStore, Command, EntityId, Event, EventPatch, KVStore, Patch
 };
 use rkyv::{
     Archive, Deserialize, Serialize,
 };
 
-#[derive(Archive, Serialize, Deserialize, Clone)]
+use serde::{Deserialize as SarDeserialize, Serialize as SarSerialize};
+use std::rc::Rc;
+use std::cell::RefCell;
+use std::cell::Ref;
+
+#[derive(Archive, Serialize, Deserialize, Clone, SarDeserialize, SarSerialize)]
 pub struct DashboardView {
   pub announcement: String,
   pub name: String,
@@ -30,7 +30,7 @@ pub enum DashboardCommand {
   /* Announcment */
 }
 
-#[derive(Default, Clone, Archive, Serialize, Deserialize)]
+#[derive(Default, Clone, Archive, Serialize, Deserialize, SarDeserialize, SarSerialize)]
 pub enum DashboardModel {
   #[default]
   Noop,
@@ -43,7 +43,16 @@ impl Patch<DashboardModel> for DashboardCommand {
     match (self, target) {
       (DashboardCommand::CreateEvent(event), DashboardModel::DashboardView(view)) => {
         // Add Event to dashboard view
+        view.events.retain(|e| e.id != event.id);
         view.events.push(event.clone());
+      },
+      (DashboardCommand::CreateEvent(event), target) => {
+        // Create a new dashboard view with the event
+        *target = DashboardModel::DashboardView(DashboardView {
+          announcement: String::new(),
+          name: String::new(),
+          events: vec![event.clone()],
+        });
       },
       (DashboardCommand::UpdateEvent((_tenant_id, _id, patch)), DashboardModel::Event(event)) => {
         // Apply patch to event
@@ -77,4 +86,40 @@ impl Command<DashboardModel, DashboardCommand> for DashboardCommand {
     }
     Ok(())
   }
+}
+
+pub type DashboardStoreInner = CQRSStore<DashboardCommand, DashboardModel, DashboardCommand>;
+#[derive(Clone)]
+pub struct DashboardStore {
+  inner: Rc<RefCell<DashboardStoreInner>>,
+}
+
+impl DashboardStore {
+  pub fn new(store: DashboardStoreInner) -> Self {
+    Self { inner: Rc::new(RefCell::new(store)) }
+  }
+
+  pub fn command(&mut self, command: &DashboardCommand) -> Result<(), Box<dyn Error>> {
+    self.inner.borrow_mut().command(command)
+  }
+
+  pub fn borrow_inner(&self) -> Ref<DashboardStoreInner> {
+    self.inner.borrow()
+  }
+
+  pub fn fold(&mut self) -> Result<(), Box<dyn Error>> {
+    self.inner.borrow_mut().fold()
+  }
+}
+
+pub fn dashboard_store() -> Result<DashboardStore, Box<dyn Error>> {
+  Ok(DashboardStore::new(
+  DashboardStoreInner::new(
+    "data/transactions/".into(),
+    KVStore::new(
+      "data/snapshots/".into(),
+      "data/events/".into(),
+      10,
+    )?
+  )))
 }

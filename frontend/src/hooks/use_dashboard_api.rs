@@ -20,8 +20,8 @@ pub struct Event {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct DashboardApi {
+  pub announcement: String,
   pub name: String,
-  pub announcment: String,
   pub events: Vec<Event>,
 }
 
@@ -47,7 +47,7 @@ pub fn use_dashboard_api(
       
       match parsed {
         Ok(response) => Some(response),
-        Err(_e) => {
+        Err(e) => {
           toast.write().toast = Some(ToastMessage {
             message: "Failed to fetch /dashboard".to_string(),
             kind: ToastKind::Error,

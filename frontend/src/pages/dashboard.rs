@@ -19,13 +19,13 @@ pub fn Dashboard() -> Element {
 pub fn DashboardHelper(dashboard_data: DashboardApi) -> Element {
     rsx!(DashboardLayout {
       name: dashboard_data.name,
-      announcment: dashboard_data.announcment,
+      announcement: dashboard_data.announcement,
       events: dashboard_data.events,
     })
 }
 
 #[component]
-pub fn DashboardLayout(name: String, announcment: String, events: Vec<Event>) -> Element {
+pub fn DashboardLayout(name: String, announcement: String, events: Vec<Event>) -> Element {
     rsx!(
       div { style: "min-height: 100vh; background-color: #f9fafb; font-family: sans-serif; padding: 2rem;",
         div { style: "max-width: 60rem; margin: 0 auto;",
@@ -56,7 +56,7 @@ pub fn DashboardLayout(name: String, announcment: String, events: Vec<Event>) ->
           div {
             h2 { style: "font-size: 1.25rem; font-weight: 600; color: #111827; margin-bottom: 1rem;", "Announcements" }
             div { style: "background-color: #eef2ff; padding: 1rem; border-radius: 0.5rem; color: #1e3a8a;",
-              p { "{announcment}" }
+              p { "{announcement}" }
               //p { "⛳️ New summer leagues of bucket golf just dropped. Rally your crew and start swinging!" }
 
             }

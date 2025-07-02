@@ -4,7 +4,8 @@ use http::StatusCode;
 use std::error::Error;
 
 use serde::{Deserialize, Serialize};
-use crate::{Event, EventPatch, IndexedStoreHandle};
+use crate::not_found_route;
+use crate::{Event, DashboardStore, DashboardModel};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DashboardApi {
@@ -15,25 +16,31 @@ pub struct DashboardApi {
 
 pub fn dashboard_route(
   _req: &Request<()>,
-  event_store: IndexedStoreHandle<Event, EventPatch, String>,
+  dashboard_store: DashboardStore,
   tenant_id: String,
 ) -> Result<Response<Vec<u8>>, Box<dyn Error>> {
-  let events = event_store.borrow_inner()
-    .query_owned_entities(&tenant_id);
+  let dashboard = dashboard_store.borrow_inner()
+    .query_owned(tenant_id.clone())?;
 
-  let dummy_data = DashboardApi {
+  match dashboard {
+    Some(DashboardModel::DashboardView(dashboard)) => {
+      let json: Vec<u8> = serde_json::to_vec(&dashboard)?;
+
+      Ok(Response::builder()
+        .status(StatusCode::OK)
+        .header("Content-Type", "application/json")
+        .header("Access-Control-Allow-Origin", "*")
+        .header("Access-Control-Allow-Methods", "*")
+        .header("Access-Control-Allow-Headers", "*")
+        .body(json)?)
+    },
+    _ => not_found_route()
+  }
+
+  /*let dummy_data = DashboardApi {
     name: "Bucket Golf Leagues".to_string(),
     announcment: "⛳️ New summer leagues of bucket golf just dropped. Rally your crew and start swinging!".to_string(),
     events,
-  };
+  };*/
 
-  let json = serde_json::to_vec(&dummy_data)?;
-
-  Ok(Response::builder()
-    .status(StatusCode::OK)
-    .header("Content-Type", "application/json")
-    .header("Access-Control-Allow-Origin", "*")
-    .header("Access-Control-Allow-Methods", "*")
-    .header("Access-Control-Allow-Headers", "*")
-    .body(json)?)
 }

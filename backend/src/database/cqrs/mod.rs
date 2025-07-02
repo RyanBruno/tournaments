@@ -18,7 +18,7 @@ use rkyv::util::AlignedVec;
 use rkyv::ser::allocator::ArenaHandle;
 use std::io::Write;
 use std::{
-  fs::{File},
+  fs::{File, create_dir_all},
   io::{BufReader, Read},
 };
 
@@ -57,11 +57,12 @@ where
 {
   pub fn new(transactions_path: PathBuf, kv_store: KVStore<T, P>) -> Self
   {
-      CQRSStore {
-          transactions_path,
-          kv_store,
-          _marker_c: std::marker::PhantomData,
-      }
+    let _ = create_dir_all(&transactions_path);
+    CQRSStore {
+        transactions_path,
+        kv_store,
+        _marker_c: std::marker::PhantomData,
+    }
   }
 
   pub fn command(&mut self, command: &C) -> Result<(), Box<dyn std::error::Error>> {
@@ -87,6 +88,18 @@ where
   pub fn query(&self, id: EntityId) -> Result<Option<&<T as Archive>::Archived>, Box<dyn Error>>
   {
     self.kv_store.read(id)
+  }
+
+  pub fn query_owned(&self, id: EntityId) -> Result<Option<T>, Box<dyn Error>>
+  {
+    let archived = self.kv_store.read(id)?;
+    match archived {
+      None => Ok(None),
+      Some(archived) => {
+        let deserialized: T = deserialize::<T, RError>(archived)?;
+        Ok(Some(deserialized))
+      }
+    }
   }
 
   pub fn fold(&mut self) -> Result<(), Box<dyn Error>> {

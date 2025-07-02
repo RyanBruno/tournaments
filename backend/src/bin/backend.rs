@@ -7,10 +7,10 @@ use backend::{
   NetExecutor,
   AsyncTcpListener,
   AsyncHttpRequest,
-  event_store,
+  dashboard_store,
+  DashboardStore,
+  DashboardCommand,
   Event,
-  IndexedStoreHandle,
-  EventPatch,
 };
 
 use backend::{
@@ -34,7 +34,7 @@ fn clear_directory(path: &str) -> io::Result<()> {
   Ok(())
 }
 
-pub fn seed_example_events(event_store: &IndexedStoreHandle<Event, EventPatch, String>) {
+pub fn seed_example_events(dashboard_store: &mut DashboardStore) {
   let examples = vec![
     Event {
       tenant_id: "bucket-golf".into(),
@@ -69,7 +69,7 @@ pub fn seed_example_events(event_store: &IndexedStoreHandle<Event, EventPatch, S
   ];
 
   for event in examples {
-    if let Err(e) = event_store.create(event.id.clone(), event.clone()) {
+    if let Err(e) = dashboard_store.command(&DashboardCommand::CreateEvent(event.clone())) {
       eprintln!("Failed to insert event {:?}: {:?}", event.name, e);
     }
   }
@@ -87,9 +87,9 @@ pub fn main() -> Result<(), Box<dyn Error>>{
   /* Clear and seed data for development */
   clear_directory("data/events/")?;
   clear_directory("data/snapshots/")?;
-  let mut event_store = event_store()?;
-  seed_example_events(&event_store);
-  event_store.refresh_snapshot()?;
+  let mut dashboard_store = dashboard_store()?;
+  seed_example_events(&mut dashboard_store);
+  dashboard_store.fold()?;
 
   /* Start the server */
   let executor = NetExecutor::new();
@@ -104,13 +104,13 @@ pub fn main() -> Result<(), Box<dyn Error>>{
       /* Process the request */
       let response = match request.uri().path() {
         "/dashboard" => dashboard_route(
-          &request, event_store.clone(),
+          &request, dashboard_store.clone(),
           request.headers().get("x-tenant_id")
             .and_then(|v| v.to_str().ok()).unwrap_or_default()
             .to_string(),
         ),
         "/event-details" => event_details_route(
-          &request, event_store.clone(),
+          &request, dashboard_store.clone(),
           request.headers().get("x-id")
             .and_then(|v| v.to_str().ok()).unwrap_or_default()
             .to_string()

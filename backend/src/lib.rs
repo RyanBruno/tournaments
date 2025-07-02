@@ -36,3 +36,4 @@ pub use crate::database::cqrs::{CQRSStore, Command};
 
 pub mod models;
 pub use crate::models::events::{Event, ArchivedEvent, EventPatch, event_store};
+pub use crate::models::dashboard::{DashboardView, ArchivedDashboardView, DashboardCommand, DashboardModel, DashboardStore, dashboard_store};
