@@ -2,7 +2,11 @@ use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use std::path::PathBuf;
 use std::error::Error;
-use crate::{KVStore, Patch, EntityId};
+use crate::KVStore;
+use models::{
+  Patch,
+  EntityId,
+};
 use rkyv::{
     Archive, Deserialize, Serialize,
     access, deserialize,

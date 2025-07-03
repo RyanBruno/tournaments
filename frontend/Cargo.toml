@@ -5,6 +5,7 @@ authors = ["Ryan Bruno <ryanbruno506@gmail.com>"]
 edition = "2021"
 
 [dependencies]
+models = { path = "../models" }
 dioxus = { version = "0.6.0", features = ["router"] }
 reqwest = { version = "0.12.15", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }

@@ -1,10 +1,12 @@
 use std::rc::Rc;
 use std::cell::{RefCell, Ref};
 use crate::{
-  Patch,
   database::indexed_store::IndexedStore,
-  EntityId,
   KVStore,
+};
+use models::{
+  Patch,
+  EntityId,
 };
 use std::error::Error;
 use std::hash::Hash;

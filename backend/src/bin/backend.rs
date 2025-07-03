@@ -10,6 +10,9 @@ use backend::{
   dashboard_store,
   DashboardStore,
   DashboardCommand,
+};
+
+use models::{
   Event,
 };
 

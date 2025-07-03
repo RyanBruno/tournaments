@@ -1,19 +1,9 @@
 use dioxus::prelude::*;
 use crate::{ToastContext, ClientContext, ToastKind, ToastMessage};
 
-use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct Event {
-  pub tenant_id: String,
-  pub id: String,
-  pub name: String,
-  pub location: String,
-  pub date: String,
-  pub image: String,
-  pub banner: Option<String>,
-  pub upsell: Option<String>,
-}
+use models::{
+  Event,
+};
 
 pub fn use_event(
   id: String,

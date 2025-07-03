@@ -1,6 +1,12 @@
 use std::error::Error;
 use crate::{
-  CQRSStore, Command, EntityId, Event, EventPatch, KVStore, Patch
+  CQRSStore, Command, KVStore
+};
+use models::{
+  Event,
+  EventPatch,
+  Patch,
+  EntityId,
 };
 use rkyv::{
     Archive, Deserialize, Serialize,

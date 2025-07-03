@@ -1,16 +1,11 @@
-
 use serde::{Deserialize, Serialize};
 use rkyv::{
     Archive,
     Deserialize as RkyvDeserialize, Serialize as RkyvSerialize,
-    rancor::Error as RError, 
 };
-use crate::Patch; // assuming your Patch trait is public and imported
-use std::error::Error;
+use crate::Patch;
 
-use crate::IndexedStoreHandle;
-
-#[derive(Archive, RkyvDeserialize, RkyvSerialize, Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Archive, RkyvDeserialize, RkyvSerialize, Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 pub struct Event {
   pub tenant_id: String,
   pub id: String,
@@ -22,7 +17,7 @@ pub struct Event {
   pub upsell: Option<String>,
 }
 
-#[derive(Archive, RkyvDeserialize, RkyvSerialize, Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Archive, RkyvDeserialize, RkyvSerialize, Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 pub struct EventPatch {
   pub id: Option<String>,
   pub name: Option<String>,
@@ -57,26 +52,4 @@ impl Patch<Event> for EventPatch {
       target.upsell = upsell;
     }
   }
-}
-
-
-pub fn event_store() -> Result<IndexedStoreHandle<Event, EventPatch, String>, Box<dyn Error>> {
-  fn extract_key(event: &<Event as Archive>::Archived) -> Vec<String> {
-    vec![
-      rkyv::deserialize::<String, RError>(&event.tenant_id).unwrap()
-    ]
-  }
-  fn extract_key_t(event: &Event) -> Vec<String> {
-    vec![
-      event.tenant_id.clone()
-    ]
-  }
-
-  IndexedStoreHandle::<Event, EventPatch, String>::new(
-    "data/snapshots/".into(),
-    "data/events/".into(),
-    10,
-    extract_key,
-    extract_key_t,
-  )
 }

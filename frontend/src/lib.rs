@@ -2,8 +2,6 @@ use dioxus::prelude::*;
 
 pub mod hooks;
 pub use hooks::use_dashboard_api::use_dashboard_api;
-pub use hooks::use_dashboard_api::DashboardApi;
-pub use hooks::use_dashboard_api::Event;
 pub use hooks::use_event::use_event;
 
 pub mod components;

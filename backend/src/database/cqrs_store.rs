@@ -24,6 +24,8 @@ use std::{
 
 use crate::{
   KVStore,
+};
+use models::{
   Patch,
   EntityId,
 };

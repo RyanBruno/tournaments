@@ -1,4 +1,11 @@
-use crate::{NotificationsDropdown, use_dashboard_api, ClientContext, DashboardApi, Event, Route, ToastContext};
+use crate::{
+  NotificationsDropdown, use_dashboard_api, ClientContext,
+  Route, ToastContext
+};
+use models::{
+  Event,
+  DashboardView,
+};
 use dioxus::prelude::*;
 const BUCKET_GOLF_SVG: Asset = asset!("/assets/bucket-golf.png");
 
@@ -16,7 +23,7 @@ pub fn Dashboard() -> Element {
     }
 }
 #[component]
-pub fn DashboardHelper(dashboard_data: DashboardApi) -> Element {
+pub fn DashboardHelper(dashboard_data: DashboardView) -> Element {
     rsx!(DashboardLayout {
       name: dashboard_data.name,
       announcement: dashboard_data.announcement,

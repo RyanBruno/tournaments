@@ -232,6 +232,7 @@ dependencies = [
  "log",
  "log4rs",
  "memmap2",
+ "models",
  "polling",
  "rkyv",
  "rkyv_derive",
@@ -1593,6 +1594,7 @@ name = "frontend"
 version = "1.0.0"
 dependencies = [
  "dioxus",
+ "models",
  "reqwest",
  "serde",
  "serde_json",
@@ -2859,6 +2861,15 @@ dependencies = [
  "libc",
  "wasi 0.11.0+wasi-snapshot-preview1",
  "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "models"
+version = "1.0.0"
+dependencies = [
+ "rkyv",
+ "rkyv_derive",
+ "serde",
 ]
 
 [[package]]

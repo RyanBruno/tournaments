@@ -23,17 +23,13 @@ pub use crate::utils::responses::{
 };
 
 pub mod api;
-pub use crate::api::dashboard::dashboard_route;
-pub use crate::api::create_event_route::create_event_route;
-pub use crate::api::event::event_details_route;
+pub use crate::api::dashboard_route::dashboard_route;
+//pub use crate::api::create_event_route::create_event_route;
+pub use crate::api::event_route::event_details_route;
 
 pub mod database;
-pub use crate::database::KVStore;
-pub use crate::database::Patch;
-pub use crate::database::EntityId;
-pub use crate::database::indexed_store_handle::IndexedStoreHandle;
-pub use crate::database::cqrs::{CQRSStore, Command};
+pub use crate::database::kv_store::KVStore;
+pub use crate::database::cqrs_store::{CQRSStore, Command};
 
 pub mod models;
-pub use crate::models::events::{Event, ArchivedEvent, EventPatch, event_store};
 pub use crate::models::dashboard::{DashboardView, ArchivedDashboardView, DashboardCommand, DashboardModel, DashboardStore, dashboard_store};

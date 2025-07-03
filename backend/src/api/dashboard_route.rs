@@ -5,7 +5,8 @@ use std::error::Error;
 
 use serde::{Deserialize, Serialize};
 use crate::not_found_route;
-use crate::{Event, DashboardStore, DashboardModel};
+use crate::{DashboardStore, DashboardModel};
+use models::{Event};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DashboardApi {
