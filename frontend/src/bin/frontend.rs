@@ -10,17 +10,8 @@ fn main() {
     dioxus::launch(App);
 }
 
-#[derive(Clone, Copy)]
-pub struct AppContext {
-    pub splash: bool,
-}
-
 #[component]
 fn App() -> Element {
-    use_context_provider(|| Signal::new(AppContext {
-        splash: true,
-    }));
-
     use_context_provider(|| Signal::new(ToastContext {
         toast: None,
     }));

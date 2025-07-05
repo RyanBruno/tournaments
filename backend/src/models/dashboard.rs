@@ -7,22 +7,15 @@ use models::{
   EventPatch,
   Patch,
   EntityId,
+  DashboardView,
 };
 use rkyv::{
     Archive, Deserialize, Serialize,
 };
 
-use serde::{Deserialize as SarDeserialize, Serialize as SarSerialize};
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::cell::Ref;
-
-#[derive(Archive, Serialize, Deserialize, Clone, SarDeserialize, SarSerialize)]
-pub struct DashboardView {
-  pub announcement: String,
-  pub name: String,
-  pub events: Vec<Event>,
-}
 
 #[derive(Default, Clone, Archive, Serialize, Deserialize)]
 pub enum DashboardCommand {
