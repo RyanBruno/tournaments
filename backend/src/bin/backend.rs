@@ -3,6 +3,7 @@ use std::fs;
 use std::io;
 use std::path::Path;
 
+use backend::PlatformStore;
 use backend::{
   NetExecutor,
   AsyncTcpListener,
@@ -10,10 +11,14 @@ use backend::{
   dashboard_store,
   DashboardStore,
   DashboardCommand,
+  PlatformCommand,
+  platform_store,
 };
 
 use models::{
   Event,
+  Platform,
+  User,
 };
 
 use backend::{
@@ -21,6 +26,7 @@ use backend::{
   error_route,
   dashboard_route,
   event_details_route,
+  login_route,
 };
 fn clear_directory(path: &str) -> io::Result<()> {
   if Path::new(path).exists() {
@@ -35,6 +41,29 @@ fn clear_directory(path: &str) -> io::Result<()> {
     }
   }
   Ok(())
+}
+
+pub fn seed_platform(platform_store: &mut PlatformStore) {
+  let platform = Platform {
+    tenant_id: "bucket-golf".into(),
+    community_name: "Bucket Golf Leagues".into(),
+    community_description: "Join the most exciting bucket golf leagues in the area!".into(),
+    platform_url: "https://bucketgolf.example.com".into(),
+  };
+
+  if let Err(e) = platform_store.command(&PlatformCommand::CreatePlatform(platform.clone())) {
+    eprintln!("Failed to insert platform: {:?}", e);
+  }
+
+  let user = User::new(
+    "ryanbruno506@gmail.com".into(),
+    "hashed_password".into(),
+  );
+  if let Err(e) = platform_store.command(&PlatformCommand::CreateUser(user.clone())) {
+    eprintln!("Failed to insert user: {:?}", e);
+  }
+
+  println!("✅ Platform seeded.");
 }
 
 pub fn seed_example_events(dashboard_store: &mut DashboardStore) {
@@ -98,11 +127,13 @@ pub fn main() -> Result<(), Box<dyn Error>>{
   log4rs::init_file("log4rs.yml", Default::default()).unwrap();
 
   /* Clear and seed data for development */
-  clear_directory("data/events/")?;
-  clear_directory("data/snapshots/")?;
+  clear_directory("data/")?;
   let mut dashboard_store = dashboard_store()?;
+  let mut platform_store = platform_store()?;
   seed_example_events(&mut dashboard_store);
+  seed_platform(&mut platform_store);
   dashboard_store.fold()?;
+  platform_store.fold()?;
 
   /* Start the server */
   let executor = NetExecutor::new();
@@ -127,6 +158,15 @@ pub fn main() -> Result<(), Box<dyn Error>>{
           request.headers().get("x-id")
             .and_then(|v| v.to_str().ok()).unwrap_or_default()
             .to_string()
+        ),
+        "/login" => login_route(
+          &request, platform_store.clone(),
+          request.headers().get("x-email")
+            .and_then(|v| v.to_str().ok()).unwrap_or_default()
+            .to_string(),
+          request.headers().get("x-password")
+            .and_then(|v| v.to_str().ok()).unwrap_or_default()
+            .to_string(),
         ),
 
         _ => not_found_route(),

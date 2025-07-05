@@ -26,6 +26,7 @@ pub mod api;
 pub use crate::api::dashboard_route::dashboard_route;
 //pub use crate::api::create_event_route::create_event_route;
 pub use crate::api::event_route::event_details_route;
+pub use crate::api::login::login_route;
 
 pub mod database;
 pub use crate::database::kv_store::KVStore;
@@ -33,3 +34,4 @@ pub use crate::database::cqrs_store::{CQRSStore, Command};
 
 pub mod models;
 pub use crate::models::dashboard::{DashboardView, ArchivedDashboardView, DashboardCommand, DashboardModel, DashboardStore, dashboard_store};
+pub use crate::models::platform::{PlatformCommand, PlatformModel, PlatformStore, platform_store};

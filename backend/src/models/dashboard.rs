@@ -137,10 +137,10 @@ impl DashboardStore {
 pub fn dashboard_store() -> Result<DashboardStore, Box<dyn Error>> {
   Ok(DashboardStore::new(
   DashboardStoreInner::new(
-    "data/transactions/".into(),
+    "data/dashboard/transactions/".into(),
     KVStore::new(
-      "data/snapshots/".into(),
-      "data/events/".into(),
+      "data/dashboard/snapshots/".into(),
+      "data/dashboard/events/".into(),
       10,
     )?
   )))
