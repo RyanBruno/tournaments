@@ -7,7 +7,8 @@ use models::{
   EventPatch,
   Patch,
   EntityId,
-  DashboardView,
+  DashboardData,
+  DashboardUser, DashboardUserPatch
 };
 use rkyv::{
     Archive, Deserialize, Serialize,
@@ -25,7 +26,9 @@ pub enum DashboardCommand {
   CreateEvent(Event),
   UpdateEvent((String, EntityId, EventPatch)),
 
-  /* Users */
+  /* User */
+  CreateUser(DashboardUser),
+  UpdateUser((String, DashboardUserPatch)),
   /* Dashboard Info */
   SetAnnouncement((EntityId, String)),
   SetName((EntityId, String)),
@@ -35,21 +38,22 @@ pub enum DashboardCommand {
 pub enum DashboardModel {
   #[default]
   Noop,
-  DashboardView(DashboardView),
+  DashboardData(DashboardData),
   Event(Event),
+  User(DashboardUser),
 }
 
 impl Patch<DashboardModel> for DashboardCommand {
   fn apply_to(self, target: &mut DashboardModel) -> () {
     match (self, target) {
-      (DashboardCommand::CreateEvent(event), DashboardModel::DashboardView(view)) => {
+      (DashboardCommand::CreateEvent(event), DashboardModel::DashboardData(view)) => {
         // Add Event to dashboard view
         view.events.retain(|e| e.id != event.id);
         view.events.push(event.clone());
       },
       (DashboardCommand::CreateEvent(event), target) => {
         // Create a new dashboard view with the event
-        *target = DashboardModel::DashboardView(DashboardView {
+        *target = DashboardModel::DashboardData(DashboardData {
           announcement: String::new(),
           name: String::new(),
           events: vec![event.clone()],
@@ -59,15 +63,15 @@ impl Patch<DashboardModel> for DashboardCommand {
         // Apply patch to event
         patch.apply_to(event);
       },
-      (DashboardCommand::UpdateEvent((_tenant_id, id, patch)), DashboardModel::DashboardView(view)) => {
+      (DashboardCommand::UpdateEvent((_tenant_id, id, patch)), DashboardModel::DashboardData(view)) => {
         // Apply patch to event
         patch.apply_to(view.events.iter_mut().find(|e| e.id == id).unwrap());
       },
-      (DashboardCommand::SetAnnouncement((_tenant_id, announcement)), DashboardModel::DashboardView(view)) => {
+      (DashboardCommand::SetAnnouncement((_tenant_id, announcement)), DashboardModel::DashboardData(view)) => {
         // Set announcement in dashboard view
         view.announcement = announcement;
       },
-      (DashboardCommand::SetName((_tenant_id, name)), DashboardModel::DashboardView(view)) => {
+      (DashboardCommand::SetName((_tenant_id, name)), DashboardModel::DashboardData(view)) => {
         // Set announcement in dashboard view
         view.name = name;
       },
@@ -96,6 +100,14 @@ impl Command<DashboardModel, DashboardCommand> for DashboardCommand {
       },
       DashboardCommand::SetName((tenant_id, _name)) => {
         kv_store.update(tenant_id.clone(), self.clone())?;
+      },
+      DashboardCommand::CreateUser(user) => {
+        /* Create User */
+        kv_store.create(format!("user-{}", user.email),DashboardModel::User(user.clone()))?;
+      },
+      DashboardCommand::UpdateUser((email, _user)) => {
+        /* Update User */
+        kv_store.update(format!("user-{}", email), self.clone())?;
       },
       DashboardCommand::Noop => {},
     }

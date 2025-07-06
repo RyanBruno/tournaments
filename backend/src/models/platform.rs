@@ -6,8 +6,8 @@ use models::{
   Patch,
   Platform,
   PlatformPatch,
-  User,
-  UserPatch,
+  PlatformUser,
+  PlatformUserPatch,
 };
 use rkyv::{
     Archive, Deserialize, Serialize,
@@ -23,8 +23,8 @@ pub enum PlatformCommand {
   #[default]
   Noop,
   /* User */
-  CreateUser(User),
-  UpdateUser((String, UserPatch)),
+  CreateUser(PlatformUser),
+  UpdateUser((String, PlatformUserPatch)),
   /* User */
   CreatePlatform(Platform),
   UpdatePlatform(PlatformPatch),
@@ -34,7 +34,7 @@ pub enum PlatformCommand {
 pub enum PlatformModel {
   #[default]
   Noop,
-  User(User),
+  User(PlatformUser),
   Platform(Platform),
 }
 

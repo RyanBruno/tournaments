@@ -3,7 +3,7 @@ use dioxus::prelude::*;
 pub mod hooks;
 pub use hooks::use_dashboard_api::use_dashboard_api;
 pub use hooks::use_event::use_event;
-pub use hooks::use_login::use_login;
+pub use hooks::use_platform_login::use_platform_login;
 
 pub mod components;
 pub use components::toast::Toast;

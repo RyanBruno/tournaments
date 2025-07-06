@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use crate::{Route, BrandContext, use_login, ClientContext, ToastContext};
+use crate::{Route, BrandContext, use_platform_login, ClientContext, ToastContext};
 use models::{LoginAttempt};
 
 #[component]
@@ -11,7 +11,7 @@ pub fn Login() -> Element {
   let mut login_attempt = use_signal(|| None);
 
 
-  let user = use_login(
+  let user = use_platform_login(
     login_attempt,
     use_context::<Signal<ToastContext>>(),
     use_context::<Signal<ClientContext>>(),

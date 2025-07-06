@@ -18,7 +18,7 @@ use backend::{
 use models::{
   Event,
   Platform,
-  User,
+  PlatformUser,
 };
 
 use backend::{
@@ -55,7 +55,7 @@ pub fn seed_platform(platform_store: &mut PlatformStore) {
     eprintln!("Failed to insert platform: {:?}", e);
   }
 
-  let user = User::new(
+  let user = PlatformUser::new(
     "ryanbruno506@gmail.com".into(),
     "hashed_password".into(),
   );

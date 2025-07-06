@@ -2,13 +2,13 @@ use crate::{ClientContext, ToastContext, ToastKind, ToastMessage};
 use dioxus::prelude::*;
 use models::LoginAttempt;
 
-use models::User;
+use models::PlatformUser;
 
-pub fn use_login(
+pub fn use_platform_login(
     login: Signal<Option<LoginAttempt>>,
     mut toast: Signal<ToastContext>,
     client: Signal<ClientContext>,
-) -> Resource<Option<User>> {
+) -> Resource<Option<PlatformUser>> {
     use_resource(move || async move{
       let login = login.read();
         let login2 = match &*(login) {
@@ -28,7 +28,7 @@ pub fn use_login(
             .await;
 
         let parsed = match result {
-            Ok(response) => response.json::<User>().await,
+            Ok(response) => response.json::<PlatformUser>().await,
             Err(e) => Err(e),
         };
 

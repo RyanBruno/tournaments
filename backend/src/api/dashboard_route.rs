@@ -24,8 +24,8 @@ pub fn dashboard_route(
     .query_owned(tenant_id.clone())?;
 
   match dashboard {
-    Some(DashboardModel::DashboardView(dashboard)) => {
-      let json: Vec<u8> = serde_json::to_vec(&dashboard)?;
+    Some(DashboardModel::DashboardData(dashboard)) => {
+      let json: Vec<u8> = serde_json::to_vec(&(dashboard + Vec::new()))?;
 
       Ok(Response::builder()
         .status(StatusCode::OK)

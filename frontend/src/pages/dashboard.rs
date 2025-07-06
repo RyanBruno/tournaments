@@ -25,14 +25,15 @@ pub fn DashboardHelper(dashboard_data: DashboardView) -> Element {
         name: dashboard_data.name,
         announcement: dashboard_data.announcement,
         events: dashboard_data.events,
+        active_events: dashboard_data.active_events,
       }
     )
 }
 
 #[component]
-pub fn DashboardLayout(name: String, announcement: String, events: Vec<Event>) -> Element {
+pub fn DashboardLayout(name: String, announcement: String, events: Vec<Event>, active_events: Vec<Event>) -> Element {
     let brand = use_context::<Signal<BrandContext>>();
-    let BrandContext {name: _, logo, primary_color, secondary_color} = brand.read().clone();
+    let BrandContext {name: _, logo: _, primary_color, secondary_color} = brand.read().clone();
     rsx!(
       div { style: "min-height: 100vh; background: linear-gradient(135deg, #f9fafb 60%, #e0e7ff 100%); font-family: 'Inter', sans-serif; padding: 0;",
         // Hero/Header
@@ -61,11 +62,6 @@ pub fn DashboardLayout(name: String, announcement: String, events: Vec<Event>) -
           // Announcements
           div { style: "max-width: 60rem; margin: 0 auto 2rem auto;",
             div { style: "background: linear-gradient(90deg, #eef2ff 80%, #e0e7ff 100%); padding: 1.5rem 2rem; border-radius: 1rem; color: #1e3a8a; box-shadow: 0 2px 8px rgba(30,58,138,0.04); margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem;",
-              img {
-                src: BUCKET_GOLF_SVG,
-                alt: "Announcement",
-                style: "width: 2.5rem; height: 2.5rem;",
-              }
               div {
                 h2 { style: "font-size: 1.2rem; font-weight: 700; color: #1e3a8a; margin-bottom: 0.25rem;",
                   "Announcements"
@@ -82,6 +78,7 @@ pub fn DashboardLayout(name: String, announcement: String, events: Vec<Event>) -
             }
             CreateEventForm {}
           }
+          ActiveEvents { events: active_events }
 
           // Events Section
           div { style: "max-width: 60rem; margin: 0 auto 3rem auto;",
@@ -117,7 +114,6 @@ pub fn DashboardLayout(name: String, announcement: String, events: Vec<Event>) -
               }
             }
           }
-        
         }
 
         // Footer
@@ -131,7 +127,7 @@ pub fn DashboardLayout(name: String, announcement: String, events: Vec<Event>) -
 #[component]
 pub fn EventCard(event: Event) -> Element {
     let brand = use_context::<Signal<BrandContext>>();
-    let BrandContext {name: _, logo, primary_color, secondary_color} = brand.read().clone();
+    let BrandContext {name: _, logo: _, primary_color, secondary_color} = brand.read().clone();
     rsx!(
       div { style: "
           position: relative;
@@ -220,7 +216,7 @@ pub fn EventCard(event: Event) -> Element {
 #[component]
 pub fn CreateEventForm() -> Element {
     let brand = use_context::<Signal<BrandContext>>();
-    let BrandContext {name: _, logo, primary_color, secondary_color} = brand.read().clone();
+    let BrandContext {name: _, logo: _, primary_color, secondary_color: _} = brand.read().clone();
     rsx!(
       div {
         class: "event-form",
