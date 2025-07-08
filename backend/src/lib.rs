@@ -32,6 +32,6 @@ pub mod database;
 pub use crate::database::kv_store::KVStore;
 pub use crate::database::cqrs_store::{CQRSStore, Command};
 
-pub mod models;
-pub use crate::models::dashboard::{DashboardCommand, DashboardModel, DashboardStore, dashboard_store};
-pub use crate::models::platform::{PlatformCommand, PlatformModel, PlatformStore, platform_store};
+pub mod store;
+pub use crate::store::dashboard::{DashboardCommand, DashboardModel, DashboardStore, dashboard_store};
+pub use crate::store::platform::{PlatformCommand, PlatformModel, PlatformStore, platform_store};
