@@ -28,3 +28,24 @@ pub fn verify_password(password: &str, hash: &str) -> bool {
     false
   }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{hash_password, verify_password};
+
+    #[test]
+    fn hash_password_changes_input() {
+        let password = "hunter2";
+        let hashed = hash_password(password);
+        assert_ne!(password, hashed, "hashed password should differ from input");
+    }
+
+    #[test]
+    fn verify_password_checks_correctness() {
+        let password = "correcthorsebatterystaple";
+        let hashed = hash_password(password);
+
+        assert!(verify_password(password, &hashed));
+        assert!(!verify_password("wrong-password", &hashed));
+    }
+}
