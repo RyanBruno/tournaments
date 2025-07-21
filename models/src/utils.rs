@@ -29,7 +29,7 @@ pub fn verify_password(password: &str, hash: &str) -> bool {
   }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(target_arch = "wasm32")))]
 mod tests {
     use super::{hash_password, verify_password};
 
