@@ -72,7 +72,7 @@ impl Patch<DashboardModel> for DashboardCommand {
         view.announcement = announcement;
       },
       (DashboardCommand::SetName((_tenant_id, name)), DashboardModel::DashboardData(view)) => {
-        // Set announcement in dashboard view
+        // Set name in dashboard view
         view.name = name;
       },
       _ => {},
