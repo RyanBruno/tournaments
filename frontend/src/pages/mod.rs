@@ -2,6 +2,7 @@
 pub mod homepage;
 pub mod login;
 pub mod signup;
+pub mod configure_platform;
 pub mod get_started;
 pub mod not_found;
 pub mod dashboard;
