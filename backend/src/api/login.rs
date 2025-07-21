@@ -2,7 +2,6 @@ use http::Request;
 use http::Response;
 use http::StatusCode;
 use std::error::Error;
-use crate::api::login;
 use crate::not_found_route;
 
 use crate::{PlatformStore, PlatformModel};
@@ -17,7 +16,7 @@ pub fn login_route(
   let user = platform_store.borrow_inner()
     .query_owned(format!("user-{}", email.clone()))?;
 
-  let login_attempt = login::LoginAttempt {
+  let login_attempt = models::LoginAttempt {
     email,
     password,
   };
