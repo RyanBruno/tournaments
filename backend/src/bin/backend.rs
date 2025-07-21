@@ -19,6 +19,7 @@ use models::{
   Event,
   Platform,
   PlatformUser,
+  DashboardUser,
 };
 
 use backend::{
@@ -106,6 +107,14 @@ pub fn seed_example_events(dashboard_store: &mut DashboardStore) {
     }
   }
 
+  let user = DashboardUser::new(
+    "ryanbruno506@gmail.com".into(),
+    "hashed_password".into(),
+  );
+  if let Err(e) = dashboard_store.command(&DashboardCommand::CreateUser(user.clone())) {
+    eprintln!("Failed to insert user: {:?}", e);
+  }
+
   dashboard_store.command(&DashboardCommand::SetName((
     "bucket-golf".into(),
     "Bucket Golf Leagues".into(),
@@ -153,13 +162,14 @@ pub fn main() -> Result<(), Box<dyn Error>>{
             .and_then(|v| v.to_str().ok()).unwrap_or_default()
             .to_string(),
         ),
-        "/event-details" => event_details_route(
+        "/dashboard/event" => event_details_route(
           &request, dashboard_store.clone(),
           request.headers().get("x-id")
             .and_then(|v| v.to_str().ok()).unwrap_or_default()
             .to_string()
         ),
-        "/login" => login_route(
+        "/dashboard/login" => panic!(),
+        "/platform/login" => login_route(
           &request, platform_store.clone(),
           request.headers().get("x-email")
             .and_then(|v| v.to_str().ok()).unwrap_or_default()

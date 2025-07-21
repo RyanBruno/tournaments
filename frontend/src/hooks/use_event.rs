@@ -14,7 +14,7 @@ pub fn use_event(
       let id = id.clone();
       async move {
         let result = client().client.clone().get(
-            "http://localhost:8000/event-details",
+            "http://localhost:8000/dashboard/event",
           ).header(
             "x-id",
             id,
@@ -31,7 +31,7 @@ pub fn use_event(
           Ok(response) => Some(response),
           Err(_e) => {
             toast.write().toast = Some(ToastMessage {
-              message: "Failed to fetch /event-details".to_string(),
+              message: "Failed to fetch /dashboard/event".to_string(),
               kind: ToastKind::Error,
             });
             None

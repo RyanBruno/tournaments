@@ -2,13 +2,13 @@ use crate::{ClientContext, ToastContext, ToastKind, ToastMessage};
 use dioxus::prelude::*;
 use models::LoginAttempt;
 
-use models::PlatformUser;
+use models::DashboardUser;
 
-pub fn use_platform_login(
+pub fn use_dashboard_login(
     login: Signal<Option<LoginAttempt>>,
     mut toast: Signal<ToastContext>,
     client: Signal<ClientContext>,
-) -> Resource<Option<PlatformUser>> {
+) -> Resource<Option<DashboardUser>> {
     use_resource(move || async move{
       let login = login.read();
         let login2 = match &*(login) {
@@ -21,14 +21,14 @@ pub fn use_platform_login(
 
         let result = client
             .client
-            .get("http://localhost:8000/platform/login")
+            .get("http://localhost:8000/dashboard/login")
             .header("x-email", login2.email.clone())
             .header("x-password", login2.password.clone())
             .send()
             .await;
 
         let parsed = match result {
-            Ok(response) => response.json::<PlatformUser>().await,
+            Ok(response) => response.json::<DashboardUser>().await,
             Err(e) => Err(e),
         };
 
