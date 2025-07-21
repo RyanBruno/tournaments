@@ -10,7 +10,7 @@ use models::{Event};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DashboardApi {
-  pub announcment: String,
+  pub announcement: String,
   pub name: String,
   pub events: Vec<Event>,
 }
@@ -40,7 +40,7 @@ pub fn dashboard_route(
 
   /*let dummy_data = DashboardApi {
     name: "Bucket Golf Leagues".to_string(),
-    announcment: "⛳️ New summer leagues of bucket golf just dropped. Rally your crew and start swinging!".to_string(),
+    announcement: "⛳️ New summer leagues of bucket golf just dropped. Rally your crew and start swinging!".to_string(),
     events,
   };*/
 
