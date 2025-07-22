@@ -27,6 +27,8 @@ pub use crate::api::dashboard_route::dashboard_route;
 //pub use crate::api::create_event_route::create_event_route;
 pub use crate::api::event_route::event_details_route;
 pub use crate::api::login::login_route;
+pub use crate::api::platform_create_route::platform_create_route;
+pub use crate::api::platform_update_route::platform_update_route;
 
 pub mod database;
 pub use crate::database::kv_store::KVStore;
