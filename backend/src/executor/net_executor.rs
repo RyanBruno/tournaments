@@ -1,4 +1,4 @@
-use std::task::ContextBuilder;
+use std::task::{Context, RawWaker};
 use std::time::Instant;
 use std::time::Duration;
 use std::task::LocalWaker;
@@ -106,9 +106,10 @@ impl NetExecutor {
         trace!("Starting NetExecutor loop with {queue_size} tasks");
         for task in queue.drain(0..) {
           let task: Rc<NetTask> = Rc::new(task);
-          let _ = unsafe { task.poll(&mut ContextBuilder::from_waker(Waker::noop())
-            .local_waker(&task.clone().into())
-            .build()) } ;
+          let raw_waker: RawWaker = task.clone().into();
+          let waker = unsafe { Waker::from_raw(raw_waker) };
+          let mut ctx = Context::from_waker(&waker);
+          let _ = unsafe { task.poll(&mut ctx) };
         }
       }
 
