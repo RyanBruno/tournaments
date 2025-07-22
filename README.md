@@ -45,3 +45,20 @@ cargo run -p frontend --bin frontend
 
 The backend uses unstable Rust features, so ensure you have the nightly toolchain
 installed (e.g. `rustup default nightly`).
+
+## Running the frontend
+
+The web UI uses Dioxus and needs a few prerequisites for development:
+
+```bash
+cargo install dioxus-cli
+rustup target add wasm32-unknown-unknown
+```
+
+Start the application with:
+
+```bash
+cargo run -p frontend --bin frontend
+```
+
+The frontend communicates with the backend over HTTP at `http://localhost:8000`.
