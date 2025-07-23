@@ -20,10 +20,13 @@ pub use crate::utils::responses::{error_route, not_found_route, serve_route};
 
 pub mod api;
 pub use crate::api::dashboard_route::dashboard_route;
+pub use crate::api::dashboard_login::dashboard_login_route;
 //pub use crate::api::create_event_route::create_event_route;
 pub use crate::api::event_route::event_details_route;
 pub use crate::api::login::login_route;
 pub use crate::api::register_event_route::register_event_route;
+pub use crate::api::platform_create_route::platform_create_route;
+pub use crate::api::platform_update_route::platform_update_route;
 
 pub mod database;
 pub use crate::database::cqrs_store::{CQRSStore, Command};

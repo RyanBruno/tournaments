@@ -14,6 +14,9 @@ use models::{DashboardUser, Event, Platform, PlatformUser};
 use backend::{
     dashboard_route, error_route, event_details_route, login_route, not_found_route,
     register_event_route,
+  dashboard_login_route,
+  platform_create_route,
+  platform_update_route,
 };
 fn clear_directory(path: &str) -> io::Result<()> {
     if Path::new(path).exists() {
@@ -61,6 +64,7 @@ pub fn seed_example_events(dashboard_store: &mut DashboardStore) {
             image: "/static/bucket-golf.jpg".into(),
             banner: Some("⚡ Almost Sold Out".into()),
             upsell: Some("Only 3 slots left".into()),
+            active: false,
         },
         Event {
             tenant_id: "bucket-golf".into(),
@@ -71,6 +75,7 @@ pub fn seed_example_events(dashboard_store: &mut DashboardStore) {
             image: "/static/launch-meetup.jpg".into(),
             banner: None,
             upsell: None,
+            active: false,
         },
         Event {
             tenant_id: "bucket-golf".into(),
@@ -81,6 +86,7 @@ pub fn seed_example_events(dashboard_store: &mut DashboardStore) {
             image: "/static/planning.jpg".into(),
             banner: Some("🆕 New".into()),
             upsell: Some("Limited spots available".into()),
+            active: false,
         },
     ];
 
@@ -175,7 +181,15 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                         .unwrap_or("guest@example.com")
                         .to_string(),
                 ),
-                "/dashboard/login" => panic!(),
+                "/dashboard/login" => dashboard_login_route(
+                  &request, dashboard_store.clone(),
+                  request.headers().get("x-email")
+                    .and_then(|v| v.to_str().ok()).unwrap_or_default()
+                    .to_string(),
+                  request.headers().get("x-password")
+                    .and_then(|v| v.to_str().ok()).unwrap_or_default()
+                    .to_string(),
+                ),
                 "/platform/login" => login_route(
                     &request,
                     platform_store.clone(),
@@ -192,7 +206,14 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                         .unwrap_or_default()
                         .to_string(),
                 ),
-
+                "/platform/create" => platform_create_route(
+                  http::Request::builder().body(Vec::new()).unwrap(),
+                  platform_store.clone(),
+                ),
+                "/platform/update" => platform_update_route(
+                  http::Request::builder().body(Vec::new()).unwrap(),
+                  platform_store.clone(),
+                ),
                 _ => not_found_route(),
             }
             .unwrap_or_else(|e| {
