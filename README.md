@@ -52,13 +52,12 @@ The web UI uses Dioxus and needs a few prerequisites for development:
 
 ```bash
 cargo install dioxus-cli
-rustup target add wasm32-unknown-unknown
 ```
 
 Start the application with:
 
 ```bash
-cargo run -p frontend --bin frontend
+dx serve --package frontend
 ```
 
-The frontend communicates with the backend over HTTP at `http://localhost:8000`.
+The frontend communicates with the backend over HTTP at `http://localhost:8080`.
