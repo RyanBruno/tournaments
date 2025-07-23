@@ -25,6 +25,8 @@ pub enum DashboardCommand {
   /* Events */
   CreateEvent(Event),
   UpdateEvent((String, EntityId, EventPatch)),
+  StartEvent((String, EntityId)),
+  EndEvent((String, EntityId)),
 
   /* User */
   CreateUser(DashboardUser),
@@ -67,6 +69,22 @@ impl Patch<DashboardModel> for DashboardCommand {
         // Apply patch to event
         patch.apply_to(view.events.iter_mut().find(|e| e.id == id).unwrap());
       },
+      (DashboardCommand::StartEvent((_, id)), DashboardModel::Event(event)) => {
+        if event.id == id { event.active = true; }
+      },
+      (DashboardCommand::EndEvent((_, id)), DashboardModel::Event(event)) => {
+        if event.id == id { event.active = false; }
+      },
+      (DashboardCommand::StartEvent((_, id)), DashboardModel::DashboardData(view)) => {
+        if let Some(e) = view.events.iter_mut().find(|e| e.id == id) {
+          e.active = true;
+        }
+      },
+      (DashboardCommand::EndEvent((_, id)), DashboardModel::DashboardData(view)) => {
+        if let Some(e) = view.events.iter_mut().find(|e| e.id == id) {
+          e.active = false;
+        }
+      },
       (DashboardCommand::SetAnnouncement((_tenant_id, announcement)), DashboardModel::DashboardData(view)) => {
         // Set announcement in dashboard view
         view.announcement = announcement;
@@ -93,6 +111,10 @@ impl Command<DashboardModel, DashboardCommand> for DashboardCommand {
         /* Update Event */
         kv_store.update(id.clone(), self.clone())?;
         /* Update Tenant's Dashboard */
+        kv_store.update(tenant_id.clone(), self.clone())?;
+      },
+      DashboardCommand::StartEvent((tenant_id, id)) | DashboardCommand::EndEvent((tenant_id, id)) => {
+        kv_store.update(id.clone(), self.clone())?;
         kv_store.update(tenant_id.clone(), self.clone())?;
       },
       DashboardCommand::SetAnnouncement((tenant_id, _announcement)) => {

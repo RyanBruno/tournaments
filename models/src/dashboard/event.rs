@@ -16,6 +16,7 @@ pub struct Event {
   pub image: String,
   pub banner: Option<String>,
   pub upsell: Option<String>,
+  pub active: bool,
 }
 
 #[derive(Archive, RkyvDeserialize, RkyvSerialize, SarSerialize, SarDeserialize, Debug, Clone, Default, PartialEq)]
@@ -27,6 +28,7 @@ pub struct EventPatch {
   pub image: Option<String>,
   pub banner: Option<Option<String>>,
   pub upsell: Option<Option<String>>,
+  pub active: Option<bool>,
 }
 
 impl Patch<Event> for EventPatch {
@@ -51,6 +53,9 @@ impl Patch<Event> for EventPatch {
     }
     if let Some(upsell) = self.upsell {
       target.upsell = upsell;
+    }
+    if let Some(active) = self.active {
+      target.active = active;
     }
   }
 }

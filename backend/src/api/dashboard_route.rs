@@ -25,7 +25,8 @@ pub fn dashboard_route(
 
   match dashboard {
     Some(DashboardModel::DashboardData(dashboard)) => {
-      let json: Vec<u8> = serde_json::to_vec(&(dashboard + Vec::new()))?;
+      let active = dashboard.events.iter().filter(|e| e.active).cloned().collect();
+      let json: Vec<u8> = serde_json::to_vec(&(dashboard + active))?;
 
       Ok(Response::builder()
         .status(StatusCode::OK)

@@ -81,6 +81,7 @@ pub fn seed_example_events(dashboard_store: &mut DashboardStore) {
       image: "/static/bucket-golf.jpg".into(),
       banner: Some("⚡ Almost Sold Out".into()),
       upsell: Some("Only 3 slots left".into()),
+      active: false,
     },
     Event {
       tenant_id: "bucket-golf".into(),
@@ -91,6 +92,7 @@ pub fn seed_example_events(dashboard_store: &mut DashboardStore) {
       image: "/static/launch-meetup.jpg".into(),
       banner: None,
       upsell: None,
+      active: false,
     },
     Event {
       tenant_id: "bucket-golf".into(),
@@ -101,6 +103,7 @@ pub fn seed_example_events(dashboard_store: &mut DashboardStore) {
       image: "/static/planning.jpg".into(),
       banner: Some("🆕 New".into()),
       upsell: Some("Limited spots available".into()),
+      active: false,
     },
   ];
 
