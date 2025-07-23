@@ -24,6 +24,7 @@ pub use crate::utils::responses::{
 
 pub mod api;
 pub use crate::api::dashboard_route::dashboard_route;
+pub use crate::api::dashboard_login::dashboard_login_route;
 //pub use crate::api::create_event_route::create_event_route;
 pub use crate::api::event_route::event_details_route;
 pub use crate::api::login::login_route;

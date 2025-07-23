@@ -27,6 +27,7 @@ use backend::{
   error_route,
   dashboard_route,
   event_details_route,
+  dashboard_login_route,
   login_route,
   platform_create_route,
   platform_update_route,
@@ -170,7 +171,15 @@ pub fn main() -> Result<(), Box<dyn Error>>{
             .and_then(|v| v.to_str().ok()).unwrap_or_default()
             .to_string()
         ),
-        "/dashboard/login" => panic!(),
+        "/dashboard/login" => dashboard_login_route(
+          &request, dashboard_store.clone(),
+          request.headers().get("x-email")
+            .and_then(|v| v.to_str().ok()).unwrap_or_default()
+            .to_string(),
+          request.headers().get("x-password")
+            .and_then(|v| v.to_str().ok()).unwrap_or_default()
+            .to_string(),
+        ),
         "/platform/login" => login_route(
           &request, platform_store.clone(),
           request.headers().get("x-email")
