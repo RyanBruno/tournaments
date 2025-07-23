@@ -4,19 +4,19 @@ pub mod hooks;
 pub use hooks::use_dashboard_api::use_dashboard_api;
 pub use hooks::use_event::use_event;
 pub use hooks::use_platform_login::use_platform_login;
+pub use hooks::use_register_event::use_register_event;
 pub use hooks::use_dashboard_login::use_dashboard_login;
 
 pub mod components;
-pub use components::toast::Toast;
 pub use components::notifications::NotificationsDropdown;
-
+pub use components::toast::Toast;
 
 pub mod context;
+pub use context::brand::BrandContext;
+pub use context::client::ClientContext;
+pub use context::toast::Toast as ToastMessage;
 pub use context::toast::ToastContext;
 pub use context::toast::ToastKind;
-pub use context::toast::Toast as ToastMessage;
-pub use context::client::ClientContext;
-pub use context::brand::BrandContext;
 
 pub mod pages;
 pub use pages::homepage::Homepage;
