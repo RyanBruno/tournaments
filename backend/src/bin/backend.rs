@@ -28,6 +28,7 @@ use backend::{
   dashboard_route,
   event_details_route,
   login_route,
+  api::create_event_route::create_event_route,
 };
 fn clear_directory(path: &str) -> io::Result<()> {
   if Path::new(path).exists() {
@@ -177,6 +178,9 @@ pub fn main() -> Result<(), Box<dyn Error>>{
           request.headers().get("x-password")
             .and_then(|v| v.to_str().ok()).unwrap_or_default()
             .to_string(),
+        ),
+        "/create-event" => create_event_route(
+          &request, dashboard_store.clone(),
         ),
 
         _ => not_found_route(),
