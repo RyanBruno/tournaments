@@ -13,6 +13,10 @@ use backend::{
   DashboardCommand,
   PlatformCommand,
   platform_store,
+  tournament_store,
+  create_tournament_route,
+  update_score_route,
+  live_results_route,
 };
 
 use models::{
@@ -139,10 +143,12 @@ pub fn main() -> Result<(), Box<dyn Error>>{
   clear_directory("data/")?;
   let mut dashboard_store = dashboard_store()?;
   let mut platform_store = platform_store()?;
+  let mut tournament_store = tournament_store()?;
   seed_example_events(&mut dashboard_store);
   seed_platform(&mut platform_store);
   dashboard_store.fold()?;
   platform_store.fold()?;
+  tournament_store.fold()?;
 
   /* Start the server */
   let executor = NetExecutor::new();
@@ -177,6 +183,34 @@ pub fn main() -> Result<(), Box<dyn Error>>{
           request.headers().get("x-password")
             .and_then(|v| v.to_str().ok()).unwrap_or_default()
             .to_string(),
+        ),
+        "/tournament/create" => create_tournament_route(
+          &request,
+          tournament_store.clone(),
+          request.headers().get("x-bracket")
+            .and_then(|v| v.to_str().ok()).unwrap_or_default().to_string(),
+          request.headers().get("x-name")
+            .and_then(|v| v.to_str().ok()).unwrap_or_default().to_string(),
+        ),
+        "/tournament/update_score" => {
+          let res = update_score_route(
+            &request,
+            tournament_store.clone(),
+            request.headers().get("x-bracket")
+              .and_then(|v| v.to_str().ok()).unwrap_or_default().to_string(),
+            request.headers().get("x-match")
+              .and_then(|v| v.to_str().ok()).unwrap_or_default().to_string(),
+            request.headers().get("x-score-a")
+              .and_then(|v| v.to_str().ok()).unwrap_or("0").parse().unwrap_or(0),
+            request.headers().get("x-score-b")
+              .and_then(|v| v.to_str().ok()).unwrap_or("0").parse().unwrap_or(0),
+          );
+          res
+        }
+        "/tournament/live" => live_results_route(
+          &request, tournament_store.clone(),
+          request.headers().get("x-bracket")
+            .and_then(|v| v.to_str().ok()).unwrap_or_default().to_string(),
         ),
 
         _ => not_found_route(),

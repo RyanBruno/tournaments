@@ -9,3 +9,5 @@ pub mod create_event;
 pub mod event_details;
 pub mod event_register;
 pub mod profile;
+pub mod bracket;
+pub mod live_scores;

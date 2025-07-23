@@ -12,3 +12,7 @@ mod utils;
 pub use utils::{EntityId, Patch};
 #[cfg(not(target_arch = "wasm32"))]
 pub use utils::{hash_password, verify_password};
+
+mod tournament;
+pub use tournament::r#match::{Match, ScoreUpdate};
+pub use tournament::bracket::Bracket;

@@ -27,6 +27,7 @@ pub use crate::api::dashboard_route::dashboard_route;
 //pub use crate::api::create_event_route::create_event_route;
 pub use crate::api::event_route::event_details_route;
 pub use crate::api::login::login_route;
+pub use crate::api::tournament_route::{create_tournament_route, update_score_route, live_results_route};
 
 pub mod database;
 pub use crate::database::kv_store::KVStore;
@@ -35,3 +36,4 @@ pub use crate::database::cqrs_store::{CQRSStore, Command};
 pub mod store;
 pub use crate::store::dashboard::{DashboardCommand, DashboardModel, DashboardStore, dashboard_store};
 pub use crate::store::platform::{PlatformCommand, PlatformModel, PlatformStore, platform_store};
+pub use crate::store::tournament::{TournamentCommand, TournamentModel, TournamentStore, tournament_store};
