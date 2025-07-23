@@ -202,10 +202,39 @@ pub fn EventCard(event: Event) -> Element {
                 transition: background 0.2s;
                 align-self: start;
                 box-shadow: 0 1px 4px rgba(234,62,78,0.07);
-                border: none;
-                cursor: pointer;
-              ",
+              border: none;
+              cursor: pointer;
+            ",
               "View Event"
+            }
+            if event.active {
+              button {
+                style: "
+                  margin-top: 0.5rem;
+                  background-color: #fee2e2;
+                  color: #b91c1c;
+                  border: none;
+                  padding: 0.4rem 0.8rem;
+                  border-radius: 9999px;
+                  font-size: 0.9rem;
+                  cursor: pointer;
+                ",
+                "End"
+              }
+            } else {
+              button {
+                style: "
+                  margin-top: 0.5rem;
+                  background-color: #dcfce7;
+                  color: #166534;
+                  border: none;
+                  padding: 0.4rem 0.8rem;
+                  border-radius: 9999px;
+                  font-size: 0.9rem;
+                  cursor: pointer;
+                ",
+                "Start"
+              }
             }
           }
         }
@@ -357,9 +386,23 @@ pub fn ActiveEvents(events: Vec<Event>) -> Element {
                 padding: 0.5rem 1rem;
                 border-radius: 9999px;
                 text-decoration: none;
+                margin-right: 0.5rem;
                 transition: background-color 0.2s ease;
               ",
                 "View Details"
+              }
+              button {
+                style: "
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: #dc2626;
+                background-color: #fee2e2;
+                padding: 0.5rem 1rem;
+                border-radius: 9999px;
+                border: none;
+                cursor: pointer;
+              ",
+                "End Event"
               }
             }
           }
