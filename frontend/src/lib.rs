@@ -22,7 +22,8 @@ pub use pages::homepage::Homepage;
 pub use pages::login::Login;
 pub use pages::signup::Signup;
 pub use pages::get_started::GetStarted;
-pub use pages::get_started::ConfigurePlatform;
+pub use pages::configure_platform::ConfigurePlatform;
+pub use pages::manage_platform::ManagePlatform;
 pub use pages::not_found::PageNotFound;
 pub use pages::dashboard::Dashboard;
 pub use pages::create_event::CreateEvent;
@@ -42,6 +43,8 @@ pub enum Route {
     GetStarted,
     #[route("/configure-platform")]
     ConfigurePlatform,
+    #[route("/manage-platform")]
+    ManagePlatform,
     #[route("/dashboard")]
     Dashboard,
     #[route("/create-event")]
