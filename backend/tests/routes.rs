@@ -94,8 +94,15 @@ fn login_route_fail() {
 }
 
 #[test]
-fn platform_create_route_success() {
+fn login_route_missing_credentials() {
     let store = temp_platform_store();
+    let res = login_route(&Request::default(), store, "".into(), "".into()).unwrap();
+    assert_eq!(res.status(), StatusCode::BAD_REQUEST);
+}
+
+#[test]
+fn platform_create_route_success() {
+    let mut store = temp_platform_store();
     let platform = Platform {
         tenant_id: "t1".into(),
         community_name: "Test".into(),

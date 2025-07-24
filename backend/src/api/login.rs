@@ -1,7 +1,7 @@
 use http::Request;
 use http::Response;
 use http::StatusCode;
-use log::{info, warn};
+use log::{error, info, warn};
 use std::error::Error;
 
 use crate::{PlatformModel, PlatformStore};
@@ -9,8 +9,11 @@ use models::LoginAttempt;
 
 /// Authenticate a platform user.
 ///
-/// Returns `UNAUTHORIZED` if credentials are incorrect or
-/// `BAD_REQUEST` when a required field is empty.
+/// Validates credentials against the [`PlatformStore`]. Detailed logs are
+/// emitted so failures can be traced.
+///
+/// * `UNAUTHORIZED` if credentials are incorrect or the user does not exist
+/// * `BAD_REQUEST` if either field is empty
 pub fn login_route(
     _req: &Request<()>,
     platform_store: PlatformStore,
@@ -26,14 +29,25 @@ pub fn login_route(
             .body(b"{}".to_vec())?);
     }
 
-    let user = platform_store
+    let user = match platform_store
         .borrow_inner()
-        .query_owned(format!("user-{email}"))?;
+        .query_owned(format!("user-{email}"))
+    {
+        Ok(u) => u,
+        Err(e) => {
+            error!("failed querying user {email}: {e}");
+            return Err(e);
+        }
+    };
 
-    let login_attempt = LoginAttempt { email, password };
+    let login_attempt = LoginAttempt {
+        email: email.clone(),
+        password: password.clone(),
+    };
 
     match user {
         Some(PlatformModel::User(user)) if user == login_attempt => {
+            info!("user {email} authenticated successfully");
             let json = serde_json::to_vec(&user)?;
 
             Ok(Response::builder()
@@ -44,9 +58,12 @@ pub fn login_route(
                 .header("Access-Control-Allow-Headers", "*")
                 .body(json)?)
         }
-        _ => Ok(Response::builder()
-            .status(StatusCode::UNAUTHORIZED)
-            .header("Content-Type", "application/json")
-            .body(b"{}".to_vec())?),
+        _ => {
+            warn!("invalid login for {email}");
+            Ok(Response::builder()
+                .status(StatusCode::UNAUTHORIZED)
+                .header("Content-Type", "application/json")
+                .body(b"{}".to_vec())?)
+        }
     }
 }
