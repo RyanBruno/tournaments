@@ -1,9 +1,12 @@
 use backend::store::dashboard::RegistrationStoreInner;
 use backend::store::platform::PlatformStoreInner;
-use backend::{login_route, register_event_route};
-use backend::{KVStore, PlatformCommand, PlatformStore, RegistrationModel, RegistrationStore};
+use backend::{login_route, platform_create_route, platform_update_route, register_event_route};
+use backend::{
+    KVStore, PlatformCommand, PlatformModel, PlatformStore, RegistrationModel, RegistrationStore,
+};
 use http::{Request, StatusCode};
-use models::PlatformUser;
+use models::{Platform, PlatformPatch, PlatformUser};
+use serde_json;
 use tempfile::tempdir;
 
 fn temp_registration_store() -> RegistrationStore {
@@ -88,4 +91,61 @@ fn login_route_fail() {
     )
     .unwrap();
     assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
+}
+
+#[test]
+fn platform_create_route_success() {
+    let store = temp_platform_store();
+    let platform = Platform {
+        tenant_id: "t1".into(),
+        community_name: "Test".into(),
+        community_description: "desc".into(),
+        platform_url: "http://example.com".into(),
+    };
+    let body = serde_json::to_vec(&platform).unwrap();
+    let req = Request::new(body);
+    let res = platform_create_route(req, store.clone()).unwrap();
+    assert_eq!(res.status(), StatusCode::CREATED);
+    store.fold().unwrap();
+    let saved = store
+        .borrow_inner()
+        .query_owned("platform-t1".into())
+        .unwrap();
+    assert!(matches!(saved, Some(PlatformModel::Platform(_))));
+}
+
+#[test]
+fn platform_update_route_success() {
+    let mut store = temp_platform_store();
+    let platform = Platform {
+        tenant_id: "t2".into(),
+        community_name: "Old".into(),
+        community_description: "old".into(),
+        platform_url: "http://old.com".into(),
+    };
+    store
+        .command(&PlatformCommand::CreatePlatform(platform.clone()))
+        .unwrap();
+    store.fold().unwrap();
+
+    let patch = PlatformPatch {
+        tenant_id: "t2".into(),
+        community_name: Some("New".into()),
+        community_description: None,
+        platform_url: None,
+    };
+    let body = serde_json::to_vec(&patch).unwrap();
+    let req = Request::new(body);
+    let res = platform_update_route(req, store.clone()).unwrap();
+    assert_eq!(res.status(), StatusCode::OK);
+    store.fold().unwrap();
+    let updated = store
+        .borrow_inner()
+        .query_owned("platform-t2".into())
+        .unwrap();
+    if let Some(PlatformModel::Platform(p)) = updated {
+        assert_eq!(p.community_name, "New");
+    } else {
+        panic!("platform not found");
+    }
 }
