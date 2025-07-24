@@ -250,6 +250,7 @@ dependencies = [
  "rkyv_derive",
  "serde",
  "serde_json",
+ "tempfile",
 ]
 
 [[package]]
