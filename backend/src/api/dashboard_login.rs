@@ -5,22 +5,29 @@ use std::error::Error;
 
 use crate::not_found_route;
 use crate::{DashboardModel, DashboardStore};
+use log::{info, warn};
 use models::LoginAttempt;
 
+/// Authenticate a dashboard user by email and password.
+/// Returns `NOT_FOUND` if the user does not exist or credentials do not match.
 pub fn dashboard_login_route(
     _req: &Request<()>,
     dashboard_store: DashboardStore,
     email: String,
     password: String,
 ) -> Result<Response<Vec<u8>>, Box<dyn Error>> {
+    info!("dashboard login attempt for {email}");
+
+    // Query the user from the store using the provided email
     let user = dashboard_store
         .borrow_inner()
-        .query_owned(format!("user-{}", email.clone()))?;
+        .query_owned(format!("user-{email}"))?;
 
     let login_attempt = LoginAttempt { email, password };
 
     match user {
         Some(DashboardModel::User(user)) if user == login_attempt => {
+            info!("dashboard login succeeded for {}", login_attempt.email);
             let json = serde_json::to_vec(&user)?;
 
             Ok(Response::builder()
@@ -31,6 +38,9 @@ pub fn dashboard_login_route(
                 .header("Access-Control-Allow-Headers", "*")
                 .body(json)?)
         }
-        _ => not_found_route(),
+        _ => {
+            warn!("dashboard login failed for {}", login_attempt.email);
+            not_found_route()
+        }
     }
 }
