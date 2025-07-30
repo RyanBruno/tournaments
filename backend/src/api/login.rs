@@ -4,7 +4,7 @@ use http::StatusCode;
 use log::{error, info, warn};
 use std::error::Error;
 
-use crate::{PlatformModel, PlatformStore};
+use crate::{generate as jwt_generate, PlatformModel, PlatformStore};
 use models::LoginAttempt;
 
 /// Authenticate a platform user.
@@ -46,9 +46,11 @@ pub fn login_route(
     };
 
     match user {
-        Some(PlatformModel::User(user)) if user == login_attempt => {
+        Some(PlatformModel::User(u)) if u == login_attempt => {
             info!("user {email} authenticated successfully");
-            let json = serde_json::to_vec(&user)?;
+
+            let token = jwt_generate(&email)?;
+            let json = serde_json::to_vec(&serde_json::json!({ "token": token }))?;
 
             Ok(Response::builder()
                 .status(StatusCode::OK)

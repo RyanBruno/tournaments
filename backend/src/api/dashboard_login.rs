@@ -4,7 +4,7 @@ use http::StatusCode;
 use std::error::Error;
 
 use crate::not_found_route;
-use crate::{DashboardModel, DashboardStore};
+use crate::{generate as jwt_generate, DashboardModel, DashboardStore};
 use log::{info, warn};
 use models::LoginAttempt;
 
@@ -26,9 +26,11 @@ pub fn dashboard_login_route(
     let login_attempt = LoginAttempt { email, password };
 
     match user {
-        Some(DashboardModel::User(user)) if user == login_attempt => {
+        Some(DashboardModel::User(u)) if u == login_attempt => {
             info!("dashboard login succeeded for {}", login_attempt.email);
-            let json = serde_json::to_vec(&user)?;
+
+            let token = jwt_generate(&login_attempt.email)?;
+            let json = serde_json::to_vec(&serde_json::json!({ "token": token }))?;
 
             Ok(Response::builder()
                 .status(StatusCode::OK)
