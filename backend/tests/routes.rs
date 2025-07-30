@@ -71,6 +71,9 @@ fn login_route_success() {
     )
     .unwrap();
     assert_eq!(res.status(), StatusCode::OK);
+    let body = res.body();
+    let v: serde_json::Value = serde_json::from_slice(body).unwrap();
+    assert!(v.get("token").is_some());
 }
 
 #[test]
