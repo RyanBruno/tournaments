@@ -18,6 +18,7 @@ fn App() -> Element {
 
     use_context_provider(|| Signal::new(ClientContext {
         client: Client::new(),
+        token: None,
     }));
 
     use_context_provider(|| Signal::new(BrandContext {
