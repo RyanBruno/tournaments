@@ -1,14 +1,20 @@
 use crate::{ClientContext, ToastContext, ToastKind, ToastMessage};
 use dioxus::prelude::*;
 use models::LoginAttempt;
+use serde::Deserialize;
+#[cfg(target_arch = "wasm32")]
+use web_sys::window;
 
-use models::DashboardUser;
+#[derive(Deserialize)]
+struct TokenResponse {
+    token: String,
+}
 
 pub fn use_dashboard_login(
     login: Signal<Option<LoginAttempt>>,
     mut toast: Signal<ToastContext>,
-    client: Signal<ClientContext>,
-) -> Resource<Option<DashboardUser>> {
+    mut client: Signal<ClientContext>,
+) -> Resource<Option<String>> {
     use_resource(move || async move{
       let login = login.read();
         let login2 = match &*(login) {
@@ -16,10 +22,10 @@ pub fn use_dashboard_login(
             _ => return None, // If login is None, we return None immediately
             //None => return None,
         };
-        let client = client();
+        let mut client_ctx = client.write();
         let mut toast = toast.write();
 
-        let result = client
+        let result = client_ctx
             .client
             .get("http://localhost:8000/dashboard/login")
             .header("x-email", login2.email.clone())
@@ -28,12 +34,21 @@ pub fn use_dashboard_login(
             .await;
 
         let parsed = match result {
-            Ok(response) => response.json::<DashboardUser>().await,
+            Ok(response) => response.json::<TokenResponse>().await,
             Err(e) => Err(e),
         };
 
         match parsed {
-            Ok(user) => Some(user),
+            Ok(token) => {
+                client_ctx.set_token(token.token.clone());
+                #[cfg(target_arch = "wasm32")]
+                if let Some(win) = window() {
+                    if let Ok(Some(storage)) = win.local_storage() {
+                        let _ = storage.set_item("token", &token.token);
+                    }
+                }
+                Some(token.token)
+            }
             Err(_) => {
                 toast.toast = Some(ToastMessage {
                     message: "Login failed".to_string(),
