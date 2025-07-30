@@ -14,12 +14,17 @@ pub fn use_dashboard_api(
   client: Signal<ClientContext>,
 ) -> Resource<Option<DashboardView>> {
     use_resource(move || async move {
-      let result = client().client.clone().get(
+      let ctx = client();
+      let mut req = ctx.client.clone().get(
           "http://localhost:8000/dashboard",
         ).header(
           "x-tenant_id",
           "bucket-golf",
-        ).send().await;
+        );
+      if let Some(token) = &ctx.token {
+          req = req.bearer_auth(token);
+      }
+      let result = req.send().await;
 
       let parsed = match result {
         Ok(response) => {

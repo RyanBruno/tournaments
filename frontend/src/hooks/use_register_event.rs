@@ -11,13 +11,16 @@ pub fn use_register_event(
         let Some((event_id, email)) = &*trigger.read() else {
             return None;
         };
-        let result = client()
+        let ctx = client();
+        let mut req = ctx
             .client
             .post("http://localhost:8000/dashboard/register_event")
             .header("x-id", event_id.clone())
-            .header("x-email", email.clone())
-            .send()
-            .await;
+            .header("x-email", email.clone());
+        if let Some(token) = &ctx.token {
+            req = req.bearer_auth(token);
+        }
+        let result = req.send().await;
         let parsed = match result {
             Ok(resp) => resp.json::<Registration>().await,
             Err(e) => Err(e),

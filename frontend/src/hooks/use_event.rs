@@ -13,12 +13,17 @@ pub fn use_event(
     use_resource(move || {
       let id = id.clone();
       async move {
-        let result = client().client.clone().get(
+        let ctx = client();
+        let mut req = ctx.client.clone().get(
             "http://localhost:8000/dashboard/event",
           ).header(
             "x-id",
             id,
-          ).send().await;
+          );
+        if let Some(token) = &ctx.token {
+            req = req.bearer_auth(token);
+        }
+        let result = req.send().await;
 
         let parsed = match result {
           Ok(response) => {
