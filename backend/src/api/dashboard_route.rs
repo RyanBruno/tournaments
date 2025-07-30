@@ -4,7 +4,7 @@ use http::StatusCode;
 use std::error::Error;
 
 use crate::not_found_route;
-use crate::{DashboardModel, DashboardStore};
+use crate::{verify, DashboardModel, DashboardStore};
 use log::{info, warn};
 use models::Event;
 use serde::{Deserialize, Serialize};
@@ -20,10 +20,27 @@ pub struct DashboardApi {
 
 /// Fetch the dashboard and all active events for the given tenant.
 pub fn dashboard_route(
-    _req: &Request<()>,
+    req: &Request<()>,
     dashboard_store: DashboardStore,
     tenant_id: String,
 ) -> Result<Response<Vec<u8>>, Box<dyn Error>> {
+    let auth_ok = req
+        .headers()
+        .get("Authorization")
+        .and_then(|h| h.to_str().ok())
+        .map(|h| h.strip_prefix("Bearer ").unwrap_or(h))
+        .and_then(|t| verify(t).ok())
+        .is_some();
+
+    if !auth_ok {
+        return Ok(
+            Response::builder()
+                .status(StatusCode::UNAUTHORIZED)
+                .header("Content-Type", "application/json")
+                .body(b"{}".to_vec())?,
+        );
+    }
+
     info!("loading dashboard for {tenant_id}");
     let dashboard = dashboard_store
         .borrow_inner()
