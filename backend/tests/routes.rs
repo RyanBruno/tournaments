@@ -1,9 +1,14 @@
-use backend::store::dashboard::RegistrationStoreInner;
+use backend::store::dashboard::{DashboardStoreInner, RegistrationStoreInner};
 use backend::store::platform::PlatformStoreInner;
-use backend::{login_route, platform_create_route, platform_update_route, register_event_route};
 use backend::{
-    KVStore, PlatformCommand, PlatformModel, PlatformStore, RegistrationModel, RegistrationStore,
+    dashboard_route, event_details_route, generate, login_route, platform_create_route,
+    platform_update_route, register_event_route,
 };
+use backend::{
+    DashboardCommand, DashboardStore, KVStore, PlatformCommand, PlatformModel,
+    PlatformStore, RegistrationModel, RegistrationStore,
+};
+use models::Event;
 use http::{Request, StatusCode};
 use models::{Platform, PlatformPatch, PlatformUser};
 use serde_json;
@@ -27,11 +32,24 @@ fn temp_platform_store() -> PlatformStore {
     PlatformStore::new(inner)
 }
 
+fn temp_dashboard_store() -> DashboardStore {
+    let dir = tempdir().unwrap().into_path();
+    let inner = DashboardStoreInner::new(
+        dir.join("txn"),
+        KVStore::new(dir.join("snap"), dir.join("event"), 1).unwrap(),
+    );
+    DashboardStore::new(inner)
+}
+
 #[test]
 fn register_event_success() {
     let mut store = temp_registration_store();
+    let token = generate("user@example.com").unwrap();
+    let req = Request::builder()
+        .header("Authorization", token)
+        .body(()).unwrap();
     let response = register_event_route(
-        &Request::default(),
+        &req,
         store.clone(),
         "e1".into(),
         "user@example.com".into(),
@@ -49,7 +67,11 @@ fn register_event_success() {
 #[test]
 fn register_event_invalid() {
     let store = temp_registration_store();
-    let response = register_event_route(&Request::default(), store, "".into(), "".into()).unwrap();
+    let token = generate("user@example.com").unwrap();
+    let req = Request::builder()
+        .header("Authorization", token)
+        .body(()).unwrap();
+    let response = register_event_route(&req, store, "".into(), "".into()).unwrap();
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 }
 
@@ -113,7 +135,11 @@ fn platform_create_route_success() {
         platform_url: "http://example.com".into(),
     };
     let body = serde_json::to_vec(&platform).unwrap();
-    let req = Request::new(body);
+    let token = generate("user@example.com").unwrap();
+    let req = Request::builder()
+        .header("Authorization", token)
+        .body(body)
+        .unwrap();
     let res = platform_create_route(req, store.clone()).unwrap();
     assert_eq!(res.status(), StatusCode::CREATED);
     store.fold().unwrap();
@@ -145,7 +171,11 @@ fn platform_update_route_success() {
         platform_url: None,
     };
     let body = serde_json::to_vec(&patch).unwrap();
-    let req = Request::new(body);
+    let token = generate("user@example.com").unwrap();
+    let req = Request::builder()
+        .header("Authorization", token)
+        .body(body)
+        .unwrap();
     let res = platform_update_route(req, store.clone()).unwrap();
     assert_eq!(res.status(), StatusCode::OK);
     store.fold().unwrap();
@@ -158,4 +188,117 @@ fn platform_update_route_success() {
     } else {
         panic!("platform not found");
     }
+}
+
+#[test]
+fn register_event_unauthorized() {
+    let store = temp_registration_store();
+    let response = register_event_route(&Request::default(), store, "e1".into(), "user@example.com".into()).unwrap();
+    assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+}
+
+#[test]
+fn platform_create_route_unauthorized() {
+    let mut store = temp_platform_store();
+    let platform = Platform {
+        tenant_id: "t1".into(),
+        community_name: "Test".into(),
+        community_description: "desc".into(),
+        platform_url: "http://example.com".into(),
+    };
+    let body = serde_json::to_vec(&platform).unwrap();
+    let req = Request::new(body);
+    let res = platform_create_route(req, store.clone()).unwrap();
+    assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
+}
+
+#[test]
+fn platform_update_route_unauthorized() {
+    let mut store = temp_platform_store();
+    let platform = Platform {
+        tenant_id: "t2".into(),
+        community_name: "Old".into(),
+        community_description: "old".into(),
+        platform_url: "http://old.com".into(),
+    };
+    store
+        .command(&PlatformCommand::CreatePlatform(platform.clone()))
+        .unwrap();
+    store.fold().unwrap();
+    let patch = PlatformPatch {
+        tenant_id: "t2".into(),
+        community_name: Some("New".into()),
+        community_description: None,
+        platform_url: None,
+    };
+    let body = serde_json::to_vec(&patch).unwrap();
+    let req = Request::new(body);
+    let res = platform_update_route(req, store.clone()).unwrap();
+    assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
+}
+
+#[test]
+fn dashboard_route_success() {
+    let mut store = temp_dashboard_store();
+    let event = Event {
+        tenant_id: "t1".into(),
+        id: "e1".into(),
+        name: "Test Event".into(),
+        location: "Loc".into(),
+        date: "2025".into(),
+        image: "img".into(),
+        banner: None,
+        upsell: None,
+        active: true,
+    };
+    store
+        .command(&DashboardCommand::CreateEvent(event.clone()))
+        .unwrap();
+    store.fold().unwrap();
+    let token = generate("user@example.com").unwrap();
+    let req = Request::builder()
+        .header("Authorization", token)
+        .body(()).unwrap();
+    let res = dashboard_route(&req, store.clone(), "t1".into()).unwrap();
+    assert_eq!(res.status(), StatusCode::OK);
+}
+
+#[test]
+fn dashboard_route_unauthorized() {
+    let store = temp_dashboard_store();
+    let res = dashboard_route(&Request::default(), store, "t1".into()).unwrap();
+    assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
+}
+
+#[test]
+fn event_details_route_success() {
+    let mut store = temp_dashboard_store();
+    let event = Event {
+        tenant_id: "t1".into(),
+        id: "e1".into(),
+        name: "Test Event".into(),
+        location: "Loc".into(),
+        date: "2025".into(),
+        image: "img".into(),
+        banner: None,
+        upsell: None,
+        active: true,
+    };
+    store
+        .command(&DashboardCommand::CreateEvent(event.clone()))
+        .unwrap();
+    store.fold().unwrap();
+    let token = generate("user@example.com").unwrap();
+    let req = Request::builder()
+        .header("Authorization", token)
+        .body(()).unwrap();
+    let res = event_details_route(&req, store.clone(), "e1".into()).unwrap();
+    assert_eq!(res.status(), StatusCode::OK);
+}
+
+#[test]
+fn event_details_route_unauthorized() {
+    let store = temp_dashboard_store();
+    let res = event_details_route(&Request::default(), store, "e1".into()).unwrap();
+    assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
 }

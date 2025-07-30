@@ -4,16 +4,33 @@ use http::Response;
 use http::StatusCode;
 use std::error::Error;
 
-use crate::DashboardStore;
+use crate::{verify, DashboardStore};
 use log::{info, warn};
 
 /// Fetch the details for a specific event by ID.
 
 pub fn event_details_route(
-    _req: &Request<()>,
+    req: &Request<()>,
     dashboard_store: DashboardStore,
     id: String,
 ) -> Result<Response<Vec<u8>>, Box<dyn Error>> {
+    let auth_ok = req
+        .headers()
+        .get("Authorization")
+        .and_then(|h| h.to_str().ok())
+        .map(|h| h.strip_prefix("Bearer ").unwrap_or(h))
+        .and_then(|t| verify(t).ok())
+        .is_some();
+
+    if !auth_ok {
+        return Ok(
+            Response::builder()
+                .status(StatusCode::UNAUTHORIZED)
+                .header("Content-Type", "application/json")
+                .body(b"{}".to_vec())?,
+        );
+    }
+
     info!("querying event {id}");
     let event = dashboard_store.borrow_inner().query_owned(id.clone())?;
 
