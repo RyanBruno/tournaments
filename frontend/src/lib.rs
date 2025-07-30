@@ -21,6 +21,7 @@ pub use context::toast::ToastKind;
 pub mod pages;
 pub use pages::homepage::Homepage;
 pub use pages::login::Login;
+pub use pages::dashboard_login::DashboardLogin;
 pub use pages::signup::Signup;
 pub use pages::get_started::GetStarted;
 pub use pages::configure_platform::ConfigurePlatform;
@@ -38,6 +39,8 @@ pub enum Route {
     Homepage,
     #[route("/login")]
     Login,
+    #[route("/dashboard-login")]
+    DashboardLogin,
     #[route("/signup")]
     Signup,
     #[route("/get-started")]

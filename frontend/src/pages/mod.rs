@@ -1,6 +1,7 @@
 
 pub mod homepage;
 pub mod login;
+pub mod dashboard_login;
 pub mod signup;
 pub mod configure_platform;
 pub mod manage_platform;
