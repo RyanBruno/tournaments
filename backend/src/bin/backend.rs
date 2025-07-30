@@ -131,7 +131,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     seed_platform(&mut platform_store);
     dashboard_store.fold()?;
     platform_store.fold()?;
-    registration_store.fold()?;
+    //registration_store.fold()?;
 
     /* Start the server */
     let executor = NetExecutor::new();
