@@ -40,3 +40,6 @@ pub use crate::store::dashboard::{
     registration_store, RegistrationCommand, RegistrationModel, RegistrationStore,
 };
 pub use crate::store::platform::{platform_store, PlatformCommand, PlatformModel, PlatformStore};
+
+mod jwt;
+pub use crate::jwt::{generate, verify, Claims};
