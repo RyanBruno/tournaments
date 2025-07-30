@@ -11,6 +11,8 @@ models/    - shared data models
 log4rs.yml - logging configuration
 ```
 
+See `backend/README.md` for backend usage and authentication details.
+
 The backend stores its data under the `data/` directory (ignored in Git). It
 creates the following sub directories at runtime:
 
@@ -61,3 +63,9 @@ dx serve --package frontend
 ```
 
 The frontend communicates with the backend over HTTP at `http://localhost:8080`.
+
+## Authentication
+
+The backend uses JSON Web Tokens (JWT) for all API requests. Set the `JWT_SECRET` environment variable to configure the signing key; it defaults to `secret` if unset.
+
+`POST /platform/login` and `POST /dashboard/login` now return a JSON object containing a `token` field. Use this token in subsequent requests by including an `Authorization: Bearer <token>` header.
