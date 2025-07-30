@@ -16,6 +16,7 @@ pub fn create_event_route(
         image: String::new(),
         banner: None,
         upsell: None,
+        active: false,
     };
     dashboard_store.command(&DashboardCommand::CreateEvent(event.clone()))?;
     dashboard_store.fold()?;

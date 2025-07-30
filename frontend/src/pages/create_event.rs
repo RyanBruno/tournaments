@@ -65,6 +65,7 @@ pub fn CreateEvent() -> Element {
                             image: String::new(),
                             banner: None,
                             upsell: None,
+                            active: false,
                         }));
                     },
                     div {

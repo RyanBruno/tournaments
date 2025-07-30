@@ -10,7 +10,7 @@ use models::{Event};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DashboardApi {
-  pub announcment: String,
+  pub announcement: String,
   pub name: String,
   pub events: Vec<Event>,
 }
@@ -25,7 +25,8 @@ pub fn dashboard_route(
 
   match dashboard {
     Some(DashboardModel::DashboardData(dashboard)) => {
-      let json: Vec<u8> = serde_json::to_vec(&(dashboard + Vec::new()))?;
+      let active = dashboard.events.iter().filter(|e| e.active).cloned().collect();
+      let json: Vec<u8> = serde_json::to_vec(&(dashboard + active))?;
 
       Ok(Response::builder()
         .status(StatusCode::OK)
@@ -40,7 +41,7 @@ pub fn dashboard_route(
 
   /*let dummy_data = DashboardApi {
     name: "Bucket Golf Leagues".to_string(),
-    announcment: "⛳️ New summer leagues of bucket golf just dropped. Rally your crew and start swinging!".to_string(),
+    announcement: "⛳️ New summer leagues of bucket golf just dropped. Rally your crew and start swinging!".to_string(),
     events,
   };*/
 

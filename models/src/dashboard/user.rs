@@ -50,6 +50,17 @@ impl PartialEq<LoginAttempt> for DashboardUser {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
+impl PartialEq<crate::platform::user::LoginAttempt> for DashboardUser {
+  fn eq(&self, attempt: &crate::platform::user::LoginAttempt) -> bool {
+    if self.email != attempt.email {
+      return false;
+    }
+
+    verify_password(&attempt.password, &self.password)
+  }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 impl Patch<DashboardUser> for DashboardUserPatch {
   fn apply_to(self, target: &mut DashboardUser) -> () {
     if let Some(password) = self.password {
