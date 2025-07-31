@@ -1,11 +1,23 @@
 use dioxus::prelude::*;
-use crate::{Route, BrandContext, use_dashboard_login, ClientContext, ToastContext};
-use models::{LoginAttempt};
+use dioxus_router::prelude::use_navigator;
+use crate::{
+    Route,
+    BrandContext,
+    use_dashboard_login,
+    use_platform_name,
+    ClientContext,
+    ToastContext,
+};
+use models::LoginAttempt;
 
 #[component]
 pub fn DashboardLogin() -> Element {
   let brand = use_context::<Signal<BrandContext>>();
-  let BrandContext {name, logo: _, primary_color: _, secondary_color} = brand.read().clone();
+  let BrandContext {name: _, logo: _, primary_color: _, secondary_color} = brand.read().clone();
+  let platform_name = use_platform_name(
+    use_context::<Signal<ToastContext>>(),
+    use_context::<Signal<ClientContext>>(),
+  );
   let mut email = use_signal(|| String::new());
   let mut password = use_signal(|| String::new());
   let mut login_attempt = use_signal(|| None);
@@ -17,12 +29,22 @@ pub fn DashboardLogin() -> Element {
     use_context::<Signal<ClientContext>>(),
   );
   println!("User: {:?}", user.read());
+  let navigator = use_navigator();
+  use_effect(move || {
+    if user.read().is_some() {
+      navigator.push(Route::Dashboard {});
+    }
+  });
+  let platform_name_str = match platform_name.read_unchecked().as_ref() {
+      Some(Some(data)) => data.clone(),
+      _ => "".to_string(),
+  };
 
   rsx!(
     div { style: "min-height: 100vh; display: flex; align-items: center; justify-content: center; background-color: #f9fafb; font-family: sans-serif;",
       div { style: "width: 100%; max-width: 24rem; background: white; padding: 2rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);",
         h2 { style: "text-align: center; font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; color: #111827;",
-          "Sign in to {name}"
+          "Sign in to {platform_name_str}"
         }
         div { style: "display: flex; flex-direction: column; gap: 1rem;",
           div {

@@ -18,6 +18,8 @@ use backend::{
   platform_create_route,
   platform_update_route,
   platform_get_route,
+  dashboard_profile_get_route,
+  dashboard_profile_patch_route,
 };
 fn clear_directory(path: &str) -> io::Result<()> {
     if Path::new(path).exists() {
@@ -127,7 +129,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     clear_directory("data/")?;
     let mut dashboard_store = dashboard_store()?;
     let mut platform_store = platform_store()?;
-    let mut registration_store = registration_store()?;
+    let registration_store = registration_store()?;
     seed_example_events(&mut dashboard_store);
     seed_platform(&mut platform_store);
     dashboard_store.fold()?;
@@ -191,6 +193,23 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                     .and_then(|v| v.to_str().ok()).unwrap_or_default()
                     .to_string(),
                 ),
+                "/dashboard/profile" => match request.method() {
+                    &http::Method::GET => dashboard_profile_get_route(
+                        &request,
+                        dashboard_store.clone(),
+                    ),
+                    &http::Method::PATCH => dashboard_profile_patch_route(
+                        &request,
+                        dashboard_store.clone(),
+                        request
+                            .headers()
+                            .get("x-password")
+                            .and_then(|v| v.to_str().ok())
+                            .unwrap_or_default()
+                            .to_string(),
+                    ),
+                    _ => not_found_route(),
+                },
                 "/platform/login" => login_route(
                     &request,
                     platform_store.clone(),

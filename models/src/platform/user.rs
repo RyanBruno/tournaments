@@ -3,8 +3,9 @@ use rkyv::{
     Archive,
     Deserialize as RkyvDeserialize, Serialize as RkyvSerialize,
 };
-use crate::Patch;
 
+#[cfg(not(target_arch = "wasm32"))]
+use crate::Patch;
 #[cfg(not(target_arch = "wasm32"))]
 use crate::{verify_password, hash_password};
 
