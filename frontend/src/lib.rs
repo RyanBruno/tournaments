@@ -32,6 +32,7 @@ pub use pages::create_event::CreateEvent;
 pub use pages::event_details::EventDetails;
 pub use pages::event_register::RegisterEvent;
 pub use pages::profile::ProfilePage;
+pub use pages::platform_admin::PlatformAdmin;
 
 #[derive(Routable, Clone, PartialEq)]
 pub enum Route {
@@ -49,6 +50,8 @@ pub enum Route {
     ConfigurePlatform,
     #[route("/manage-platform")]
     ManagePlatform,
+    #[route("/platform-admin")]
+    PlatformAdmin,
     #[route("/dashboard")]
     Dashboard,
     #[route("/create-event")]

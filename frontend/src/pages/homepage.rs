@@ -53,6 +53,10 @@ pub fn Homepage() -> Element {
             onmouseover: |_| {},
             "Contact"
           }
+          Link { to: Route::PlatformAdmin {},
+            style: "text-decoration: none; color: inherit;",
+            "Admin"
+          }
         }
       }
 
