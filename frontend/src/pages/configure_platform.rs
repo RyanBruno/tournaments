@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
-use crate::{BrandContext, ClientContext};
+use crate::{
+    BrandContext, ClientContext, Route, ToastContext, ToastKind, ToastMessage,
+};
 use models::Platform;
 
 #[component]
@@ -12,6 +14,8 @@ pub fn ConfigurePlatform() -> Element {
     let mut community_description = use_signal(|| String::new());
     let mut platform_url = use_signal(|| String::new());
     let mut submit = use_signal(|| false);
+    let mut toast = use_context::<Signal<ToastContext>>();
+    let nav = use_navigator();
 
     use_future(move || async move {
         if !submit() { return; }
@@ -21,11 +25,25 @@ pub fn ConfigurePlatform() -> Element {
             community_description: community_description(),
             platform_url: platform_url(),
         };
-        let _ = client().client
+        let result = client()
+            .client
             .post("http://localhost:8000/platform/create")
             .json(&platform)
             .send()
             .await;
+
+        match result {
+            Ok(resp) if resp.status().is_success() => {
+                nav.push(Route::ManagePlatform {});
+            }
+            _ => {
+                let mut toast = toast.write();
+                toast.toast = Some(ToastMessage {
+                    message: "Failed to configure platform".to_string(),
+                    kind: ToastKind::Error,
+                });
+            }
+        }
     });
 
     rsx!(
