@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use dioxus_router::prelude::use_navigator;
 use crate::{Route, BrandContext, use_platform_login, ClientContext, ToastContext};
 use models::{LoginAttempt};
 
@@ -17,6 +18,13 @@ pub fn Login() -> Element {
     use_context::<Signal<ClientContext>>(),
   );
   println!("User: {:?}", user.read());
+
+  let navigator = use_navigator();
+  use_effect(move || {
+    if user.read().is_some() {
+      navigator.push(Route::ManagePlatform {});
+    }
+  });
 
   rsx!(
     div { style: "min-height: 100vh; display: flex; align-items: center; justify-content: center; background-color: #f9fafb; font-family: sans-serif;",
