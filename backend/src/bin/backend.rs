@@ -17,6 +17,7 @@ use backend::{
   dashboard_login_route,
   platform_create_route,
   platform_update_route,
+  platform_get_route,
 };
 fn clear_directory(path: &str) -> io::Result<()> {
     if Path::new(path).exists() {
@@ -213,6 +214,16 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                 "/platform/update" => platform_update_route(
                   http::Request::builder().body(Vec::new()).unwrap(),
                   platform_store.clone(),
+                ),
+                "/platform/info" => platform_get_route(
+                  &request,
+                  platform_store.clone(),
+                  request
+                    .headers()
+                    .get("x-tenant_id")
+                    .and_then(|v| v.to_str().ok())
+                    .unwrap_or_default()
+                    .to_string(),
                 ),
                 _ => not_found_route(),
             }

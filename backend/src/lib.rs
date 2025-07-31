@@ -27,6 +27,7 @@ pub use crate::api::login::login_route;
 pub use crate::api::register_event_route::register_event_route;
 pub use crate::api::platform_create_route::platform_create_route;
 pub use crate::api::platform_update_route::platform_update_route;
+pub use crate::api::platform_get_route::platform_get_route;
 
 pub mod database;
 pub use crate::database::cqrs_store::{CQRSStore, Command};

@@ -2,7 +2,7 @@ use backend::store::dashboard::{DashboardStoreInner, RegistrationStoreInner};
 use backend::store::platform::PlatformStoreInner;
 use backend::{
     dashboard_route, event_details_route, generate, login_route, platform_create_route,
-    platform_update_route, register_event_route,
+    platform_update_route, platform_get_route, register_event_route,
 };
 use backend::{
     DashboardCommand, DashboardStore, KVStore, PlatformCommand, PlatformModel,
@@ -267,9 +267,7 @@ fn dashboard_route_success() {
 fn dashboard_route_unauthorized() {
     let store = temp_dashboard_store();
     let res = dashboard_route(&Request::default(), store, "t1".into()).unwrap();
-    assert_eq!(res.status(), StatusCode::OK);
-    let body: DashboardView = serde_json::from_slice(res.body()).unwrap();
-    assert!(body.active_events.is_empty());
+    assert_eq!(res.status(), StatusCode::NOT_FOUND);
 }
 
 #[test]
@@ -302,7 +300,35 @@ fn event_details_route_success() {
 fn event_details_route_unauthorized() {
     let store = temp_dashboard_store();
     let res = event_details_route(&Request::default(), store, "e1".into()).unwrap();
+    assert_eq!(res.status(), StatusCode::NOT_FOUND);
+}
+
+#[test]
+fn platform_get_route_success() {
+    let mut store = temp_platform_store();
+    let platform = Platform {
+        tenant_id: "t3".into(),
+        community_name: "CN".into(),
+        community_description: "desc".into(),
+        platform_url: "http://ex.com".into(),
+    };
+    store
+        .command(&PlatformCommand::CreatePlatform(platform.clone()))
+        .unwrap();
+    store.fold().unwrap();
+    let token = generate("u@example.com").unwrap();
+    let req = Request::builder()
+        .header("Authorization", token)
+        .body(()).unwrap();
+    let res = platform_get_route(&req, store.clone(), "t3".into()).unwrap();
     assert_eq!(res.status(), StatusCode::OK);
-    let event: Event = serde_json::from_slice(res.body()).unwrap();
-    assert!(event.banner.is_none() && event.upsell.is_none());
+    let got: Platform = serde_json::from_slice(res.body()).unwrap();
+    assert_eq!(got, platform);
+}
+
+#[test]
+fn platform_get_route_unauthorized() {
+    let store = temp_platform_store();
+    let res = platform_get_route(&Request::default(), store, "t1".into()).unwrap();
+    assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
 }
