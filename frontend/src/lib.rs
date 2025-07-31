@@ -6,6 +6,7 @@ pub use hooks::use_event::use_event;
 pub use hooks::use_platform_login::use_platform_login;
 pub use hooks::use_register_event::use_register_event;
 pub use hooks::use_dashboard_login::use_dashboard_login;
+pub use hooks::use_platform_name::use_platform_name;
 
 pub mod components;
 pub use components::notifications::NotificationsDropdown;
