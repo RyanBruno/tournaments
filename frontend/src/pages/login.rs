@@ -21,8 +21,9 @@ pub fn Login() -> Element {
 
   let navigator = use_navigator();
   use_effect(move || {
-    if user.read().is_some() {
-      navigator.push(Route::ManagePlatform {});
+    match *user.read() {
+      Some(Some(_)) => {navigator.push(Route::ManagePlatform {});},
+      _ => {},
     }
   });
 

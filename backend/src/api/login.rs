@@ -26,6 +26,9 @@ pub fn login_route(
         warn!("login request missing credentials");
         return Ok(Response::builder()
             .status(StatusCode::BAD_REQUEST)
+            .header("Access-Control-Allow-Origin", "*")
+            .header("Access-Control-Allow-Methods", "*")
+            .header("Access-Control-Allow-Headers", "*")
             .body(b"{}".to_vec())?);
     }
 
@@ -65,6 +68,9 @@ pub fn login_route(
             Ok(Response::builder()
                 .status(StatusCode::UNAUTHORIZED)
                 .header("Content-Type", "application/json")
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "*")
+                .header("Access-Control-Allow-Headers", "*")
                 .body(b"{}".to_vec())?)
         }
     }

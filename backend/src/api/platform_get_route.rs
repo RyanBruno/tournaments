@@ -22,6 +22,9 @@ pub fn platform_get_route(
         return Ok(Response::builder()
             .status(StatusCode::UNAUTHORIZED)
             .header("Content-Type", "application/json")
+            .header("Access-Control-Allow-Origin", "*")
+            .header("Access-Control-Allow-Methods", "*")
+            .header("Access-Control-Allow-Headers", "*")
             .body(b"{}".to_vec())?);
     }
 
