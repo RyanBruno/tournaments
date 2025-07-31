@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  cargo-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: minimal
+          override: true
+      - name: Add WebAssembly target
+        run: rustup target add wasm32-unknown-unknown
+      - name: cargo check
+        run: cargo check
+      - name: cargo check (frontend WASM)
+        run: cargo check --target wasm32-unknown-unknown --package frontend
+
