@@ -12,3 +12,6 @@ mod utils;
 #[cfg(not(target_arch = "wasm32"))]
 pub use utils::{hash_password, verify_password};
 pub use utils::{EntityId, Patch};
+
+mod transaction;
+pub use transaction::{TransactionCategory, Categorizer};
