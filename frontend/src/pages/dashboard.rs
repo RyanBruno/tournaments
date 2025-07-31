@@ -48,6 +48,11 @@ pub fn DashboardLayout(name: String, announcement: String, events: Vec<Event>, a
                   "＋ Create Event"
                 }
               }
+              Link { to: Route::PlatformAdmin {},
+                button { style: "background: white; color: {secondary_color}; font-weight: 700; padding: 0.6rem 1.4rem; border-radius: 0.5rem; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.04); font-size: 1rem; transition: background 0.2s; cursor: pointer;",
+                  "Admin"
+                }
+              }
               NotificationsDropdown {}
               Link { to: Route::ProfilePage {},
                 span { style: "display: inline-block; width: 2.7rem; height: 2.7rem; border-radius: 9999px; background: linear-gradient(135deg, #e0e7ff 60%, {primary_color} 100%); overflow: hidden; text-align: center; line-height: 2.7rem; font-weight: 700; color: {secondary_color}; font-size: 1.2rem; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.04);",
