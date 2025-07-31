@@ -1,7 +1,20 @@
 use dioxus::prelude::*;
+use crate::{hooks::use_profile::use_profile, ClientContext, ToastContext};
 
 #[component]
 pub fn ProfilePage() -> Element {
+  let toast = use_context::<Signal<ToastContext>>();
+  let client = use_context::<Signal<ClientContext>>();
+  let mut password = use_signal(|| String::new());
+  let mut trigger = use_signal(|| None::<String>);
+  let profile = use_profile(trigger, toast, client);
+  let email = profile
+      .read()
+      .as_ref()
+      .and_then(|p| p.as_ref())
+      .map(|p| p.email.clone())
+      .unwrap_or_default();
+
   rsx!(
     div {
       style: "
@@ -40,8 +53,8 @@ pub fn ProfilePage() -> Element {
             style: "width: 8rem; height: 8rem; border-radius: 9999px; object-fit: cover; border: 2px solid #e5e7eb; margin-bottom: 1rem;"
           },
 
-          h2 { style: "font-size: 1.25rem; font-weight: 600; color: #111827;", "Jane Doe" },
-          p { style: "font-size: 0.875rem; color: #6b7280;", "janedoe@example.com" },
+          h2 { style: "font-size: 1.25rem; font-weight: 600; color: #111827;", "{email}" },
+          p { style: "font-size: 0.875rem; color: #6b7280;", "{email}" },
 
           // Stats
           div {
@@ -72,10 +85,11 @@ pub fn ProfilePage() -> Element {
           form {
             style: "display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;",
 
-            input { placeholder: "Full Name", value: "Jane Doe", style: base_input() }
-            input { r#type: "email", placeholder: "Email", value: "janedoe@example.com", style: base_input() }
+            input { placeholder: "Full Name", value: "", style: base_input() }
+            input { r#type: "email", placeholder: "Email", value: "{email}", style: base_input() }
             input { placeholder: "Phone", value: "123-456-7890", style: base_input() }
             input { r#type: "url", placeholder: "Profile Picture URL", style: base_input() }
+            input { r#type: "password", placeholder: "New Password", oninput: move |e| password.set(e.value()), value: password.clone(), style: base_input() }
           }
 
           h2 { style: "font-size: 1.25rem; font-weight: 600; margin: 2rem 0 1rem;", "Billing Address" },
@@ -104,6 +118,7 @@ pub fn ProfilePage() -> Element {
               border: none;
               cursor: pointer;
             ",
+            onclick: move |_| trigger.set(Some(password())),
             "Update Profile"
           }
         }
