@@ -35,12 +35,16 @@ pub fn DashboardLogin() -> Element {
       navigator.push(Route::Dashboard {});
     }
   });
+  let platform_name_str = match platform_name.read_unchecked().as_ref() {
+      Some(Some(data)) => data.clone(),
+      _ => "".to_string(),
+  };
 
   rsx!(
     div { style: "min-height: 100vh; display: flex; align-items: center; justify-content: center; background-color: #f9fafb; font-family: sans-serif;",
       div { style: "width: 100%; max-width: 24rem; background: white; padding: 2rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);",
         h2 { style: "text-align: center; font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; color: #111827;",
-          "Sign in to {platform_name.read().as_deref().unwrap_or("")}"
+          "Sign in to {platform_name_str}"
         }
         div { style: "display: flex; flex-direction: column; gap: 1rem;",
           div {

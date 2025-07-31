@@ -3,7 +3,7 @@ use rkyv::{
     Archive,
     Deserialize as RkyvDeserialize, Serialize as RkyvSerialize,
 };
-
+#[cfg(not(target_arch = "wasm32"))]
 use crate::Patch;
 
 #[cfg(not(target_arch = "wasm32"))]

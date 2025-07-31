@@ -6,4 +6,5 @@ pub mod login;
 pub mod register_event_route;
 pub mod platform_create_route;
 pub mod platform_update_route;
+pub mod platform_get_route;
 pub mod dashboard_profile_route;

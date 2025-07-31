@@ -17,6 +17,7 @@ use backend::{
   dashboard_login_route,
   platform_create_route,
   platform_update_route,
+  platform_get_route,
   dashboard_profile_get_route,
   dashboard_profile_patch_route,
 };
@@ -128,7 +129,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
     clear_directory("data/")?;
     let mut dashboard_store = dashboard_store()?;
     let mut platform_store = platform_store()?;
-    let mut registration_store = registration_store()?;
+    let registration_store = registration_store()?;
     seed_example_events(&mut dashboard_store);
     seed_platform(&mut platform_store);
     dashboard_store.fold()?;
@@ -232,6 +233,16 @@ pub fn main() -> Result<(), Box<dyn Error>> {
                 "/platform/update" => platform_update_route(
                   http::Request::builder().body(Vec::new()).unwrap(),
                   platform_store.clone(),
+                ),
+                "/platform/info" => platform_get_route(
+                  &request,
+                  platform_store.clone(),
+                  request
+                    .headers()
+                    .get("x-tenant_id")
+                    .and_then(|v| v.to_str().ok())
+                    .unwrap_or_default()
+                    .to_string(),
                 ),
                 _ => not_found_route(),
             }
