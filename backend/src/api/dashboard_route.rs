@@ -32,14 +32,6 @@ pub fn dashboard_route(
         .and_then(|t| verify(t).ok())
         .is_some();
 
-    if !auth_ok {
-        return Ok(
-            Response::builder()
-                .status(StatusCode::UNAUTHORIZED)
-                .header("Content-Type", "application/json")
-                .body(b"{}".to_vec())?,
-        );
-    }
 
     info!("loading dashboard for {tenant_id}");
     let dashboard = dashboard_store
@@ -49,12 +41,16 @@ pub fn dashboard_route(
     match dashboard {
         Some(DashboardModel::DashboardData(dashboard)) => {
             info!("dashboard {tenant_id} found");
-            let active = dashboard
-                .events
-                .iter()
-                .filter(|e| e.active)
-                .cloned()
-                .collect();
+            let active = if auth_ok {
+                dashboard
+                    .events
+                    .iter()
+                    .filter(|e| e.active)
+                    .cloned()
+                    .collect()
+            } else {
+                Vec::new()
+            };
             let json: Vec<u8> = serde_json::to_vec(&(dashboard + active))?;
 
             Ok(Response::builder()

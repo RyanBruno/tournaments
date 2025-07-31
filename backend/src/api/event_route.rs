@@ -22,21 +22,17 @@ pub fn event_details_route(
         .and_then(|t| verify(t).ok())
         .is_some();
 
-    if !auth_ok {
-        return Ok(
-            Response::builder()
-                .status(StatusCode::UNAUTHORIZED)
-                .header("Content-Type", "application/json")
-                .body(b"{}".to_vec())?,
-        );
-    }
 
     info!("querying event {id}");
     let event = dashboard_store.borrow_inner().query_owned(id.clone())?;
 
     match event {
-        Some(crate::DashboardModel::Event(event)) => {
+        Some(crate::DashboardModel::Event(mut event)) => {
             info!("event {id} found");
+            if !auth_ok {
+                event.banner = None;
+                event.upsell = None;
+            }
             let json = serde_json::to_vec(&event)?;
 
             Ok(Response::builder()

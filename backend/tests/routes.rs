@@ -8,7 +8,7 @@ use backend::{
     DashboardCommand, DashboardStore, KVStore, PlatformCommand, PlatformModel,
     PlatformStore, RegistrationModel, RegistrationStore,
 };
-use models::Event;
+use models::{Event, DashboardView};
 use http::{Request, StatusCode};
 use models::{Platform, PlatformPatch, PlatformUser};
 use serde_json;
@@ -267,7 +267,9 @@ fn dashboard_route_success() {
 fn dashboard_route_unauthorized() {
     let store = temp_dashboard_store();
     let res = dashboard_route(&Request::default(), store, "t1".into()).unwrap();
-    assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
+    assert_eq!(res.status(), StatusCode::OK);
+    let body: DashboardView = serde_json::from_slice(res.body()).unwrap();
+    assert!(body.active_events.is_empty());
 }
 
 #[test]
@@ -300,5 +302,7 @@ fn event_details_route_success() {
 fn event_details_route_unauthorized() {
     let store = temp_dashboard_store();
     let res = event_details_route(&Request::default(), store, "e1".into()).unwrap();
-    assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
+    assert_eq!(res.status(), StatusCode::OK);
+    let event: Event = serde_json::from_slice(res.body()).unwrap();
+    assert!(event.banner.is_none() && event.upsell.is_none());
 }
