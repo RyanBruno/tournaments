@@ -34,9 +34,26 @@ pub fn error_route() -> Response<Vec<u8>> {
     Response::builder()
         .status(StatusCode::INTERNAL_SERVER_ERROR)
         .header("Content-Type", "text/html")
+        .header("Access-Control-Allow-Origin", "*")
+        .header("Access-Control-Allow-Methods", "*")
+        .header("Access-Control-Allow-Headers", "*")
         .body("500 Internal Server Error".into())
         .unwrap_or_else(|e| {
             error!("failed to build error response: {e}");
+            Response::new(Vec::new())
+        })
+}
+
+/// Response to HTTP CORS preflight `OPTIONS` requests.
+pub fn preflight_route() -> Response<Vec<u8>> {
+    Response::builder()
+        .status(StatusCode::OK)
+        .header("Access-Control-Allow-Origin", "*")
+        .header("Access-Control-Allow-Methods", "*")
+        .header("Access-Control-Allow-Headers", "*")
+        .body(Vec::new())
+        .unwrap_or_else(|e| {
+            error!("failed to build preflight response: {e}");
             Response::new(Vec::new())
         })
 }

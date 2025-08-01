@@ -19,13 +19,15 @@ pub fn platform_get_route(
         .is_some();
 
     if !auth_ok {
-        return Ok(Response::builder()
-            .status(StatusCode::UNAUTHORIZED)
-            .header("Content-Type", "application/json")
-            .header("Access-Control-Allow-Origin", "*")
-            .header("Access-Control-Allow-Methods", "*")
-            .header("Access-Control-Allow-Headers", "*")
-            .body(b"{}".to_vec())?);
+        return Ok(
+            Response::builder()
+                .status(StatusCode::UNAUTHORIZED)
+                .header("Content-Type", "application/json")
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "*")
+                .header("Access-Control-Allow-Headers", "*")
+                .body(b"{}".to_vec())?,
+        );
     }
 
     info!("loading platform {tenant_id}");
