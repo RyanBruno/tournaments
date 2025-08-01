@@ -20,6 +20,7 @@ use backend::{
   platform_get_route,
   dashboard_profile_get_route,
   dashboard_profile_patch_route,
+  preflight_route,
 };
 fn clear_directory(path: &str) -> io::Result<()> {
     if Path::new(path).exists() {
@@ -147,7 +148,10 @@ pub fn main() -> Result<(), Box<dyn Error>> {
             let (request, mut stream) = server.next_request().await.unwrap();
 
             /* Process the request */
-            let response = match request.uri().path() {
+            let response = if request.method() == http::Method::OPTIONS {
+                preflight_route()
+            } else {
+                match request.uri().path() {
                 "/dashboard" => dashboard_route(
                     &request,
                     dashboard_store.clone(),
@@ -249,7 +253,8 @@ pub fn main() -> Result<(), Box<dyn Error>> {
             .unwrap_or_else(|e| {
                 error!("Error processing request: {e}");
                 error_route()
-            });
+            })
+            };
 
             /* Write the response back to the client */
             AsyncHttpRequest::write_response(&mut stream, response).await;

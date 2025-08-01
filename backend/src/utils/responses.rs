@@ -43,3 +43,17 @@ pub fn error_route() -> Response<Vec<u8>> {
             Response::new(Vec::new())
         })
 }
+
+/// Response to HTTP CORS preflight `OPTIONS` requests.
+pub fn preflight_route() -> Response<Vec<u8>> {
+    Response::builder()
+        .status(StatusCode::OK)
+        .header("Access-Control-Allow-Origin", "*")
+        .header("Access-Control-Allow-Methods", "*")
+        .header("Access-Control-Allow-Headers", "*")
+        .body(Vec::new())
+        .unwrap_or_else(|e| {
+            error!("failed to build preflight response: {e}");
+            Response::new(Vec::new())
+        })
+}
