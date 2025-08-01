@@ -22,6 +22,9 @@ pub fn dashboard_profile_get_route(
             Response::builder()
                 .status(StatusCode::UNAUTHORIZED)
                 .header("Content-Type", "application/json")
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "*")
+                .header("Access-Control-Allow-Headers", "*")
                 .body(b"{}".to_vec())?,
         );
     };
@@ -65,6 +68,9 @@ pub fn dashboard_profile_patch_route(
             Response::builder()
                 .status(StatusCode::UNAUTHORIZED)
                 .header("Content-Type", "application/json")
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "*")
+                .header("Access-Control-Allow-Headers", "*")
                 .body(b"{}".to_vec())?,
         );
     };

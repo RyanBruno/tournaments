@@ -24,9 +24,14 @@ pub fn login_route(
 
     if email.trim().is_empty() || password.trim().is_empty() {
         warn!("login request missing credentials");
-        return Ok(Response::builder()
-            .status(StatusCode::BAD_REQUEST)
-            .body(b"{}".to_vec())?);
+        return Ok(
+            Response::builder()
+                .status(StatusCode::BAD_REQUEST)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "*")
+                .header("Access-Control-Allow-Headers", "*")
+                .body(b"{}".to_vec())?,
+        );
     }
 
     let user = match platform_store
@@ -62,10 +67,15 @@ pub fn login_route(
         }
         _ => {
             warn!("invalid login for {email}");
-            Ok(Response::builder()
-                .status(StatusCode::UNAUTHORIZED)
-                .header("Content-Type", "application/json")
-                .body(b"{}".to_vec())?)
+            Ok(
+                Response::builder()
+                    .status(StatusCode::UNAUTHORIZED)
+                    .header("Content-Type", "application/json")
+                    .header("Access-Control-Allow-Origin", "*")
+                    .header("Access-Control-Allow-Methods", "*")
+                    .header("Access-Control-Allow-Headers", "*")
+                    .body(b"{}".to_vec())?,
+            )
         }
     }
 }

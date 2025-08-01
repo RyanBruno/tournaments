@@ -34,6 +34,9 @@ pub fn error_route() -> Response<Vec<u8>> {
     Response::builder()
         .status(StatusCode::INTERNAL_SERVER_ERROR)
         .header("Content-Type", "text/html")
+        .header("Access-Control-Allow-Origin", "*")
+        .header("Access-Control-Allow-Methods", "*")
+        .header("Access-Control-Allow-Headers", "*")
         .body("500 Internal Server Error".into())
         .unwrap_or_else(|e| {
             error!("failed to build error response: {e}");

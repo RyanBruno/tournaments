@@ -26,6 +26,9 @@ pub fn register_event_route(
             Response::builder()
                 .status(StatusCode::UNAUTHORIZED)
                 .header("Content-Type", "application/json")
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "*")
+                .header("Access-Control-Allow-Headers", "*")
                 .body(b"{}".to_vec())?,
         );
     }
@@ -33,10 +36,15 @@ pub fn register_event_route(
 
     if event_id.trim().is_empty() || email.trim().is_empty() {
         warn!("invalid registration parameters");
-        return Ok(Response::builder()
-            .status(StatusCode::BAD_REQUEST)
-            .header("Content-Type", "application/json")
-            .body(b"{}".to_vec())?);
+        return Ok(
+            Response::builder()
+                .status(StatusCode::BAD_REQUEST)
+                .header("Content-Type", "application/json")
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "*")
+                .header("Access-Control-Allow-Headers", "*")
+                .body(b"{}".to_vec())?,
+        );
     }
 
     let registration = Registration {
@@ -49,9 +57,14 @@ pub fn register_event_route(
         registration.clone(),
     )) {
         error!("failed to create registration: {e}");
-        return Ok(Response::builder()
-            .status(StatusCode::INTERNAL_SERVER_ERROR)
-            .body(b"{}".to_vec())?);
+        return Ok(
+            Response::builder()
+                .status(StatusCode::INTERNAL_SERVER_ERROR)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "*")
+                .header("Access-Control-Allow-Headers", "*")
+                .body(b"{}".to_vec())?,
+        );
     }
 
     let json = serde_json::to_vec(&registration)?;
