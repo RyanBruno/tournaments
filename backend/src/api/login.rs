@@ -67,7 +67,6 @@ pub fn login_route(
         }
         _ => {
             warn!("invalid login for {email}");
-<<<<<<< HEAD
             Ok(
                 Response::builder()
                     .status(StatusCode::UNAUTHORIZED)
@@ -77,15 +76,6 @@ pub fn login_route(
                     .header("Access-Control-Allow-Headers", "*")
                     .body(b"{}".to_vec())?,
             )
-=======
-            Ok(Response::builder()
-                .status(StatusCode::UNAUTHORIZED)
-                .header("Content-Type", "application/json")
-                .header("Access-Control-Allow-Origin", "*")
-                .header("Access-Control-Allow-Methods", "*")
-                .header("Access-Control-Allow-Headers", "*")
-                .body(b"{}".to_vec())?)
->>>>>>> origin/main
         }
     }
 }
