@@ -131,7 +131,9 @@ impl AsyncHttpRequest {
     let data_length = response.body().len();
 
     let mut res = Vec::new();
-    res.push(String::from("HTTP/1.1 200 OK\r\n"));
+    let code_str = response.status().canonical_reason().unwrap_or("OK").to_string();
+    let code = response.status().as_u16().to_string();
+    res.push(format!("HTTP/1.1 {code} {code_str}\r\n"));
     res.push(format!("Content-Length: {data_length}\r\n"));
     let headers = response.headers().into_iter()
       .filter_map(|(k, v)| match v.to_str() {
